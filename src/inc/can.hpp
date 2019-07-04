@@ -16,6 +16,11 @@ private:
     /* data */
     int s_;
 
+    //CAN filter number, 8 canopen devices, each has 4 TxPDO.
+    static const __u8 kNodeNum = 8;
+
+    static const int kCanFilterNum = 32;
+
 public:
     can(/* args */);
     ~can();

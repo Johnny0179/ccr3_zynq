@@ -1,5 +1,8 @@
 cmake_minimum_required (VERSION 3.2)
 
+# support c++11
+# add_compile_options(-std=c++11)
+
 # set project name
 set(project_name "ccr3_zynq")
 
