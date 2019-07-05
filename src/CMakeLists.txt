@@ -1,30 +1,28 @@
 # add sources here
-# set(src_list 
-#     main.cc
-#     hw/can.cc
-#     hw/maxon.cc
-#     libmodbus/modbus.c
-#     libmodbus/modbus-tcp.c
-#     libmodbus/modbus-data.c
-#     )
+set(src_list 
+    main.cc
+    hw/can.cc
+    hw/maxon.cc
+    freemodbus_tcp/freemodbus_tcp.c
+    )
 
 #add freemodbus demo source
-set(freemodbus 
-    demo.c)
+# set(freemodbus 
+#     demo.c)
 
 set(elf_file ${project_name}.elf)
 
 
 
 set(INC_DIR inc
-            inc/libmodbus)
+            inc/freemodbus_tcp
+            )
 
 # add library
 include_directories(${INC_DIR})
-# include_directories(inc/modbus)
 
 #add sources to executable
-add_executable(${elf_file} ${freemodbus})
+add_executable(${elf_file} ${src_list})
 
 # link freemodbus library to project
 target_link_libraries(${elf_file} PUBLIC freemodbus_lib)

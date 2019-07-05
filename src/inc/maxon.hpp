@@ -47,4 +47,5 @@ public:
     // start motor
     void MotorEnable(__u8 slave_id);
     void StopMotor(__u8 slave_id);
+    int CanRecv(can_frame *recv_frame);
 };

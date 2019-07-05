@@ -62,3 +62,7 @@ void maxon::StopMotor(__u8 slave_id)
 {
     SetCtrlWrd(slave_id, 0x0000);
 }
+
+int maxon::CanRecv(can_frame *recv_frame){
+    return can0.receive(recv_frame);
+}
