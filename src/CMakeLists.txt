@@ -2,7 +2,7 @@
 set(src_list 
     main.cc
     hw/can.cc
-    hw/maxon.cc
+    robot/robot.cc
     freemodbus_tcp/freemodbus_tcp.c
     )
 

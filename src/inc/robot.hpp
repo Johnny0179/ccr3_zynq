@@ -1,10 +1,14 @@
 #pragma once
 
 #include "can.hpp"
-class maxon
+#include "motor.h"
+
+class robot
 {
 private:
+    // can device
     can can0;
+
     /* CANopen Function Codes */
     static const __u16 kNMT = (__u16)0x0 << 7;
     static const __u16 kSYNC = (__u16)0x1 << 7;
@@ -32,20 +36,28 @@ private:
     static const __u16 kNMT_Reset_Comunication = 0x82;
 
     /* Motor List */
+    static const __u8 kClaw = 1;
+
+    // motors
+    maxon claw;
 
 public:
-    maxon(/* args */);
-    ~maxon();
+    robot(/* args */);
+    ~robot();
 
+    // NMT functions
     ssize_t NMTstart(void);
     ssize_t NMTstop(void);
-
     ssize_t TxPdo1(__u8 slave_id, __u16 ctrl_wrd);
 
+    // motor controls
     ssize_t SetCtrlWrd(__u8 slave_id, __u16 ctrl_wrd);
 
-    // start motor
     void MotorEnable(__u8 slave_id);
     void StopMotor(__u8 slave_id);
+
+    // can receive
     int CanRecv(can_frame *recv_frame);
+
+    void CanDisPatch(can_frame *m);
 };

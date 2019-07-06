@@ -1,10 +1,10 @@
-#include "maxon.hpp"
+#include "robot.hpp"
 #include "freemodbus_tcp.h"
 
 #include <pthread.h>
 
 /* ----------------------- global variables ---------------------------------*/
-maxon ccr3;
+robot ccr3;
 // global pointer
 // USHORT *const reg = usRegHoldingBuf;
 
