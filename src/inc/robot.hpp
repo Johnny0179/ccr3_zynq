@@ -1,7 +1,29 @@
 #pragma once
 
 #include "can.hpp"
-#include "motor.h"
+#include "freemodbus_tcp.h"
+
+struct maxon
+{
+    __u16 SlaveID;
+    __u16 CtrlMode;
+    __u16 ServSTA;
+    __u16 ServErr;
+    __u16 CtrlWord;
+    __s16 StatusWord;
+    __s32 PosSV;
+    __s32 PosPV;
+    __s32 PosLocked;
+    __s32 PosLimit;
+    __s32 SpdSV;
+    __s32 SpdPV;
+    __s16 MaxCurrenLimit;
+    __s16 TrqPV;
+    __s16 MaxcurrentLocked;
+    __u16 RdUpdate;
+    __u16 init_ok;
+    __s32 PosPV_Last;
+};
 
 class robot
 {
@@ -38,11 +60,13 @@ private:
     /* Motor List */
     static const __u8 kClaw = 1;
 
-    // motors
-    maxon claw;
+    /* variables */
+
+    // motor parameter pointers
+    maxon *motor[1];
 
 public:
-    robot(/* args */);
+    robot(USHORT *reg);
     ~robot();
 
     // NMT functions
@@ -59,5 +83,5 @@ public:
     // can receive
     int CanRecv(can_frame *recv_frame);
 
-    void CanDisPatch(can_frame *m);
+    void CanDisPatch();
 };

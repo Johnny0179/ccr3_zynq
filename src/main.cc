@@ -3,13 +3,11 @@
 
 #include <pthread.h>
 
-/* ----------------------- global variables ---------------------------------*/
-robot ccr3;
-// global pointer
-// USHORT *const reg = usRegHoldingBuf;
-
 // extern variables
 extern USHORT usRegHoldingBuf[REG_HOLDING_NREGS];
+
+/* ----------------------- global variables ---------------------------------*/
+robot ccr3(usRegHoldingBuf);
 
 // thread function declaration
 static void *pvPollingThread(void *pvParameter);

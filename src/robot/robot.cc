@@ -1,8 +1,11 @@
 #include "robot.hpp"
 
-robot::robot(/* args */)
+robot::robot(USHORT *reg)
 {
-    can can0;
+    // can can0;
+
+    // initialize the pointer
+    motor[0]=(maxon *)reg;
 }
 
 robot::~robot()
@@ -68,9 +71,12 @@ int robot::CanRecv(can_frame *recv_frame)
     return can0.receive(recv_frame);
 }
 
-void robot::CanDisPatch(can_frame *recv_frame)
+void robot::CanDisPatch()
 {
+    can_frame *recv_frame;
+    
     CanRecv(recv_frame);
+
     __u16 cob_id = recv_frame->can_id & (~0x007F);
     __u16 SlaveId = (recv_frame->can_id & 0x7F);
 
@@ -78,38 +84,34 @@ void robot::CanDisPatch(can_frame *recv_frame)
     {
         // 0x180
     case kPDO1tx:
-        ptrServ[SlaveId]->StatusWord = (__u16)(recv_frame->data[1] << 8) | recv_frame->data[0];
-        ptrServ[SlaveId]->TrqPV = (__s16)((recv_frame->data[3] << 8) | recv_frame->data[2]);
-        ptrServ[SlaveId]->PosPV = (__s32)((recv_frame->data[7] << 24) | (recv_frame->data[6] << 16) |
-                                          (recv_frame->data[5] << 8) | recv_frame->data[4]);
-        OSSemPost(sem_SrvCAN_rx);
+        motor[SlaveId]->StatusWord = (__u16)(recv_frame->data[1] << 8) | recv_frame->data[0];
+        motor[SlaveId]->TrqPV = (__s16)((recv_frame->data[3] << 8) | recv_frame->data[2]);
+        motor[SlaveId]->PosPV = (__s32)((recv_frame->data[7] << 24) | (recv_frame->data[6] << 16) |
+                                        (recv_frame->data[5] << 8) | recv_frame->data[4]);
         break;
 
         // 0x280
     case kPDO2tx:
-        ptrServ[SlaveId]->StatusWord = (recv_frame->data[1] << 8) | recv_frame->data[0];
-        ptrServ[SlaveId]->TrqPV = (__s16)((recv_frame->data[3] << 8) | recv_frame->data[2]);
-        ptrServ[SlaveId]->SpdPV = (__s32)((recv_frame->data[7] << 24) | (recv_frame->data[6] << 16) |
-                                          (recv_frame->data[5] << 8) | recv_frame->data[4]);
-        OSSemPost(sem_SrvCAN_rx);
+        motor[SlaveId]->StatusWord = (recv_frame->data[1] << 8) | recv_frame->data[0];
+        motor[SlaveId]->TrqPV = (__s16)((recv_frame->data[3] << 8) | recv_frame->data[2]);
+        motor[SlaveId]->SpdPV = (__s32)((recv_frame->data[7] << 24) | (recv_frame->data[6] << 16) |
+                                        (recv_frame->data[5] << 8) | recv_frame->data[4]);
         break;
 
         // 0x380
     case kPDO3tx:
-        ptrServ[SlaveId]->SpdPV = (__s32)((recv_frame->data[3] << 24) | recv_frame->data[2] << 16 |
-                                          (recv_frame->data[1] << 8) | recv_frame->data[0]);
-        ptrServ[SlaveId]->PosPV = (__s32)((recv_frame->data[7] << 24) | (recv_frame->data[6] << 16) |
-                                          (recv_frame->data[5] << 8) | recv_frame->data[4]);
-        OSSemPost(sem_SrvCAN_rx);
+        motor[SlaveId]->SpdPV = (__s32)((recv_frame->data[3] << 24) | recv_frame->data[2] << 16 |
+                                        (recv_frame->data[1] << 8) | recv_frame->data[0]);
+        motor[SlaveId]->PosPV = (__s32)((recv_frame->data[7] << 24) | (recv_frame->data[6] << 16) |
+                                        (recv_frame->data[5] << 8) | recv_frame->data[4]);
         break;
 
         // 0x480
     case kPDO4tx:
-        ptrServ[SlaveId]->StatusWord = (__u16)(recv_frame->data[1] << 8) | recv_frame->data[0];
-        ptrServ[SlaveId]->ServErr = (__u16)((recv_frame->data[3] << 8) | recv_frame->data[2]);
-        ptrServ[SlaveId]->TrqPV = (__s16)((recv_frame->data[5] << 8) | recv_frame->data[4]);
-        ptrServ[SlaveId]->CtrlMode = recv_frame->data[6];
-        OSSemPost(sem_SrvCAN_rx);
+        motor[SlaveId]->StatusWord = (__u16)(recv_frame->data[1] << 8) | recv_frame->data[0];
+        motor[SlaveId]->ServErr = (__u16)((recv_frame->data[3] << 8) | recv_frame->data[2]);
+        motor[SlaveId]->TrqPV = (__s16)((recv_frame->data[5] << 8) | recv_frame->data[4]);
+        motor[SlaveId]->CtrlMode = recv_frame->data[6];
         break;
 
         // case PDO1rx: // 0x200
