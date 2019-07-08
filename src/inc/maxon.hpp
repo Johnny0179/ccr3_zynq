@@ -29,7 +29,7 @@ class maxon : public can
 private:
     /* motor parameters */
     static const __u32 kServOnPre = 0x0006;
-    static const __u32 kServOn = 0x000f;
+    static const __u32 kServOn = 0x000F;
     static const __u32 kServOff = 0x0000;
 
     static const __u32 kServAbsPosSet = 0x003F;

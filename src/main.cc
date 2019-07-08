@@ -52,17 +52,15 @@ int main()
     usleep(200000);
 
     /* test */
-    // set profile velocity mode
-    // ccr3.SdoWrU32(1, 0x6060, 0, 0x03);
 
     ccr3.MotorEnable(1);
-    ccr3.SetMotorAbsPos(1, 1000);
-    
-    // delay 2ms
-    usleep(2000);
-    ccr3.SetCtrlWrd(1, 0x000F);
 
-    sleep(2);
+    // delay 50ms, delay enough time to wait the EPOS operate!
+    usleep(50000);
+    ccr3.SetMotorAbsPos(1, 300000);
+
+    usleep(50000);
+    ccr3.SetCtrlWrd(1, 0x000F);
 
     // ccr3.StopMotor(1);
 
@@ -70,7 +68,9 @@ int main()
 
     while (1)
     {
-        sleep(1);
+        // delay 1s
+        sleep(2);
+        // ccr3.SetCtrlWrd(1, 0x000F);
     }
     return 0;
 }
