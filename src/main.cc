@@ -3,6 +3,9 @@
 
 #include <pthread.h>
 
+// mutex
+pthread_mutex_t xLock = PTHREAD_MUTEX_INITIALIZER;
+
 // extern variables
 extern USHORT usRegHoldingBuf[REG_HOLDING_NREGS];
 
@@ -22,9 +25,6 @@ int main()
 
     pthread_t can_recv_thread;
 
-    // mutex
-    // pthread_mutex_t xLock = PTHREAD_MUTEX_INITIALIZER;
-
     /*---------------create modbus thread---------------*/
     // do not share data.
     res = pthread_create(&modbus_thread, NULL, pvPollingThread, NULL);
@@ -43,17 +43,26 @@ int main()
     }
 
     // sleep(5);
-    // if (ccr3.NMTstart() != -1)
-    // {
-    //     printf("NMT started successfully!\n");
-    // }
+    if (ccr3.NMTstart() != -1)
+    {
+        printf("NMT started successfully!\n");
+    }
 
-    // // delay 200ms
-    // usleep(200000);
+    // delay 200ms
+    usleep(200000);
 
-    // ccr3.MotorEnable(1);
+    /* test */
+    // set profile velocity mode
+    // ccr3.SdoWrU32(1, 0x6060, 0, 0x03);
 
-    // sleep(2);
+    ccr3.MotorEnable(1);
+    ccr3.SetMotorAbsPos(1, 1000);
+    
+    // delay 2ms
+    usleep(2000);
+    ccr3.SetCtrlWrd(1, 0x000F);
+
+    sleep(2);
 
     // ccr3.StopMotor(1);
 
@@ -103,21 +112,11 @@ void *pvPollingThread(void *pvParameter)
 // can send thread function
 void *CanRecvThread(void *arg)
 {
-    int i;
-    can_frame can_recv_frame;
+
     while (1)
     {
-        ccr3.CanRecv(&can_recv_frame);
-
-        // print can received frame
-        printf("ID=0x%X DLC=%d \n", can_recv_frame.can_id, can_recv_frame.can_dlc);
-
-        for (i = 0; i < can_recv_frame.can_dlc; i++)
-        {
-
-            printf("data[%d]=0x%X\n", i, can_recv_frame.data[i]);
-            usRegHoldingBuf[i] = can_recv_frame.data[i];
-        }
-        printf("----------------------------------\n");
+        // delay 1ms
+        usleep(1000);
+        ccr3.CanDisPatch();
     }
 }

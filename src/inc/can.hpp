@@ -29,3 +29,5 @@ public:
     int send(const struct can_frame *send_frame);
     int receive(can_frame *recv_frame);
 };
+
+

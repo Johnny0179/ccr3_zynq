@@ -4,7 +4,7 @@ USHORT usRegInputStart = REG_INPUT_START;
 USHORT usRegInputBuf[REG_INPUT_NREGS];
 
 USHORT usRegHoldingStart = REG_HOLDING_START;
-USHORT usRegHoldingBuf[REG_HOLDING_NREGS];
+USHORT usRegHoldingBuf[REG_HOLDING_NREGS]={0};
 
 /* function codes */
 eMBErrorCode
