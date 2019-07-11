@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 // mutex
-pthread_mutex_t xLock = PTHREAD_MUTEX_INITIALIZER;
+// pthread_mutex_t xLock = PTHREAD_MUTEX_INITIALIZER;
 
 // extern variables
 extern USHORT usRegHoldingBuf[REG_HOLDING_NREGS];
@@ -45,32 +45,27 @@ int main()
     // sleep(5);
     if (ccr3.NMTstart() != -1)
     {
-        printf("NMT started successfully!\n");
+        printf("NMT started!\n");
     }
 
-    // delay 200ms
-    usleep(200000);
+    
+    // // delay 200ms
+    // usleep(200000);
 
-    /* test */
+    // ccr3.MotorEnable(1);
 
-    ccr3.MotorEnable(1);
+    // // delay 50ms, delay enough time to wait the EPOS operate!
+    // usleep(200000);
+    // ccr3.SetMotorRelPos(1, -20000);
 
-    // delay 50ms, delay enough time to wait the EPOS operate!
-    usleep(50000);
-    ccr3.SetMotorAbsPos(1, 300000);
-
-    usleep(50000);
-    ccr3.SetCtrlWrd(1, 0x000F);
-
-    // ccr3.StopMotor(1);
-
-    // ccr3.NMTstop();
+    // usleep(200000);
+    // ccr3.SetCtrlWrd(1, 0x000F);
 
     while (1)
     {
-        // delay 1s
-        sleep(2);
-        // ccr3.SetCtrlWrd(1, 0x000F);
+        ccr3.system();
+        // delay 100us
+        usleep(100);
     }
     return 0;
 }

@@ -8,6 +8,7 @@ maxon::~maxon()
 {
 }
 
+// TxPDO1
 ssize_t maxon::TxPdo1(__u8 slave_id, __u16 ctrl_wrd)
 {
     can_frame tx_pdo1_frame;
@@ -21,11 +22,12 @@ ssize_t maxon::TxPdo1(__u8 slave_id, __u16 ctrl_wrd)
     return can0.send(&tx_pdo1_frame);
 }
 
+// TxPDO2
 ssize_t maxon::TxPdo2(__u8 slave_id, __u16 ctrl_wrd, __s32 pos_sv)
 {
     can_frame tx_pdo2_frame;
 
-    // tx_pdo1 frame init
+    // tx_pdo2 frame init
     tx_pdo2_frame.can_id = kPDO2rx + slave_id;
     tx_pdo2_frame.can_dlc = 6;
 
@@ -40,6 +42,37 @@ ssize_t maxon::TxPdo2(__u8 slave_id, __u16 ctrl_wrd, __s32 pos_sv)
     return can0.send(&tx_pdo2_frame);
 }
 
+// TxPDO3
+ssize_t maxon::TxPdo3(__u8 slave_id, __s32 speed_set)
+{
+    can_frame tx_pdo3_frame;
+
+    // tx_pdo3 frame init
+    tx_pdo3_frame.can_id = kPDO3rx + slave_id;
+    tx_pdo3_frame.can_dlc = 4;
+    tx_pdo3_frame.data[0] = speed_set & 0xff;
+    tx_pdo3_frame.data[1] = (speed_set >> 8) & 0xff;
+    tx_pdo3_frame.data[2] = (speed_set >> 16) & 0xff;
+    tx_pdo3_frame.data[3] = (speed_set >> 24) & 0xff;
+    return can0.send(&tx_pdo3_frame);
+}
+
+// TxPDO4
+ssize_t maxon::TxPdo4(__u8 slave_id, __s32 max_current_limit)
+{
+    can_frame tx_pdo4_frame;
+
+    // tx_pdo4 frame init
+    tx_pdo4_frame.can_id = kPDO4rx + slave_id;
+    tx_pdo4_frame.can_dlc = 4;
+    tx_pdo4_frame.data[0] = max_current_limit & 0xff;
+    tx_pdo4_frame.data[1] = (max_current_limit >> 8) & 0xff;
+    tx_pdo4_frame.data[2] = 0;
+    tx_pdo4_frame.data[3] = 0;
+    return can0.send(&tx_pdo4_frame);
+}
+
+// sdo write 32bit
 ssize_t maxon::SdoWrU32(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 {
     can_frame sdo_rx_frame;
@@ -68,8 +101,8 @@ ssize_t maxon::SetCtrlWrd(__u8 slave_id, __u16 ctrl_wrd)
 void maxon::MotorEnable(__u8 slave_id)
 {
     SetCtrlWrd(slave_id, 0x0006);
-    // delay 2ms
-    usleep(2000);
+    // delay 50ms
+    usleep(50000);
     SetCtrlWrd(slave_id, 0x000F);
 }
 
@@ -83,6 +116,21 @@ ssize_t maxon::SetMotorAbsPos(__u8 slave_id, __s32 abs_pos)
     return TxPdo2(slave_id, kServAbsPosSet, abs_pos);
 }
 
+ssize_t maxon::SetMotorRelPos(__u8 slave_id, __s32 relative_pos){
+    return TxPdo2(slave_id, kServRelPosSet, relative_pos);
+}
+
+ssize_t maxon::SetMotorSpeed(__u8 slave_id, __s32 speed_set)
+{
+    return TxPdo3(slave_id, speed_set);
+}
+
+ssize_t maxon::SetMotorCurrentLimit(__u8 slave_id, __s32 max_current_limit)
+{
+    return TxPdo4(slave_id, max_current_limit);
+}
+
+// read the can frame
 void maxon::CanDisPatch(void)
 {
 
@@ -97,7 +145,15 @@ void maxon::CanDisPatch(void)
     switch (SlaveId)
     {
     case kClaw:
-        MotorParaRead(cob_id, claw, recv_frame);
+        // get the node id
+        claw_->motor_id = SlaveId;
+        // read the parameters
+        MotorParaRead(cob_id, claw_, recv_frame);
+        break;
+
+    case kUpWheel:
+        up_wheel_->motor_id = SlaveId;
+        MotorParaRead(cob_id, up_wheel_, recv_frame);
         break;
 
     default:
