@@ -50,6 +50,8 @@ void robot::system(void)
         if (robot_->mode_select == kIdleMode)
         {
             robot_->system_state = kIdleMode;
+            // stop NMT
+            NMTstop();
         }
         else if (robot_->mode_select == kDebugMode)
         {
@@ -71,6 +73,10 @@ void robot::system(void)
         }
         else
         {
+            // start NMT
+            NMTstart();
+
+            // choose debug mode
             switch (robot_->debug_mode_select)
             {
                 //claw motor debug
