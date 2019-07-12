@@ -21,7 +21,7 @@ struct robot_type
     __u16 debug_en;
 
     // claw debug factor
-    __s16 claw_debug_factor;
+    __s16 upclaw_debug_factor;
 
     // upwheel debug factor
     __s16 upwheel_debug_factor;
@@ -31,9 +31,6 @@ class robot : public maxon
 {
 private:
     robot_type *robot_;
-
-    // delay_time 20ms
-    static const __u32 kDelayEpos = 20000;
 
     /* NMT Command Specifier, sent by master to change a slave state */
     /* ------------------------------------------------------------- */
@@ -59,13 +56,13 @@ private:
 
     /* ------------------------debug ------------------------------------ */
     // claw motor debug
-    static const __u16 kClawMotorDebug = 1;
+    static const __u16 kUpClawMotorDebug = 1;
 
     // claw motor debug
     static const __u16 kUpWheelMotorDebug = 2;
 
     // claw homing debug
-    static const __u16 kClawHomingDebug = 3;
+    static const __u16 kUpClawHomingDebug = 3;
     // up wheel debug
     static const __u16 kUpWheelMotionDebug = 4;
 
@@ -78,7 +75,7 @@ private:
 
     /* -------------------------debug parameters------------------------------------ */
     // claw relative pos 100 inc
-    static const __u32 kClawDebugRelaPos = 100;
+    static const __u32 kUpClawDebugRelaPos = 100;
 
     //upwheel relative pos 1000inc
     static const __u32 kUpWheelDebugRelaPos = 1000;
@@ -96,10 +93,11 @@ public:
 
     /* -------------------------robot control------------------------------ */
 
+ 
     /* -------------------------debug function------------------------------ */
-    void ClawDebug(void);
+    void UpClawDebug(void);
     void UpWheelDebug(void);
 
-    // claw homing
-    __u8 ClawHoming(__u16 claw_homing_en);
+    // homing
+    __u16 Homing(maxon_type *motor);
 };

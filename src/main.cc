@@ -86,8 +86,8 @@ void *pvPollingThread(void *pvParameter)
             while (1)
             {
                 if (eMBPoll() == MB_ENOERR)
-                { // refresh rate 10ms
-                    usleep(10000);
+                { // refresh rate 1ms
+                    usleep(1000);
                 }
                 else
                 {

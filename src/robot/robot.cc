@@ -3,8 +3,8 @@
 robot::robot(USHORT reg[]) : maxon()
 {
     // define the pointer address
-    claw_ = (maxon_type *)&reg[100];
-    up_wheel_ = (maxon_type *)&reg[150];
+    upclaw_ = (maxon_type *)&reg[100];
+    upwheel_ = (maxon_type *)&reg[150];
 
     robot_ = (robot_type *)&reg[0];
 
@@ -74,13 +74,17 @@ void robot::system(void)
             switch (robot_->debug_mode_select)
             {
                 //claw motor debug
-            case kClawMotorDebug:
-                ClawDebug();
+            case kUpClawMotorDebug:
+                UpClawDebug();
                 break;
 
                 //upwheel motor debug
             case kUpWheelMotorDebug:
                 UpWheelDebug();
+                break;
+
+            case kUpClawHomingDebug:
+                Homing(upclaw_);
                 break;
 
             default:
@@ -96,16 +100,15 @@ void robot::system(void)
 }
 
 /* -------------------------debug function------------------------------ */
-void robot::ClawDebug(void)
+void robot::UpClawDebug(void)
 {
     // enable claw motor
-    MotorEnable(kClaw);
+    MotorEnable(kUpClaw);
 
-    // wait epos
-    usleep(kDelayEpos);
-    SetMotorRelPos(kClaw, robot_->claw_debug_factor * kClawDebugRelaPos);
-    usleep(kDelayEpos);
-    SetCtrlWrd(kClaw, 0x000F);
+    MoveRelative(kUpClaw, robot_->upclaw_debug_factor * kUpClawDebugRelaPos);
+
+    // disable the debug
+    robot_->debug_en = 0;
 }
 
 void robot::UpWheelDebug(void)
@@ -113,45 +116,53 @@ void robot::UpWheelDebug(void)
     // enable claw motor
     MotorEnable(kUpWheel);
 
-    // wait epos
-    usleep(kDelayEpos);
-    SetMotorRelPos(kUpWheel, robot_->upwheel_debug_factor * kUpWheelDebugRelaPos);
-    usleep(kDelayEpos);
-    SetCtrlWrd(kUpWheel, 0x000F);
+    MoveRelative(kUpWheel, robot_->upwheel_debug_factor * kUpWheelDebugRelaPos);
 
     // disable the debug
     robot_->debug_en = 0;
 }
 
-// claw homing
-__u8 robot::ClawHoming(__u16 claw_homing_en)
+// homing
+__u16 robot::Homing(maxon_type *motor)
 {
-    __u8 homing_state = 0;
-    switch (homing_state)
+    while (motor->homing_state != kHomingDone)
     {
-    case kHomingIdle:
-        if (claw_homing_en == 1)
+        switch (motor->homing_state)
         {
-            homing_state = kHoming;
+        case kHomingIdle:
+            if (motor->homing_en == 1)
+            {
+                motor->homing_state = kHoming;
+            }
+            else
+            {
+                motor->homing_state = kHomingIdle;
+            }
+            break;
+
+        case kHoming:
+            if (abs(motor->TrqPV) < motor->homing_threhold)
+            {
+                MoveRelative(motor->motor_id, motor->homing_delta_pos);
+            }
+            else
+            {
+                motor->homing_state = kHomingDone;
+            }
+
+            break;
+
+        case kHomingDone:
+            // stop motor
+            MotorQuickStop(motor->motor_id);
+            // save the lock position
+            motor->PosLocked = motor->PosPV;
+            break;
+
+        default:
+            break;
         }
-        else
-        {
-            homing_state = kHomingIdle;
-        }
-        break;
-
-    case kHoming:
-        // if (claw_->TrqPV)
-        // {
-        //     /* code */
-        // }
-        break;
-
-    case kHomingDone:
-
-        break;
-
-    default:
-        break;
     }
+
+    return motor->homing_state;
 }

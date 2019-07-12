@@ -116,7 +116,8 @@ ssize_t maxon::SetMotorAbsPos(__u8 slave_id, __s32 abs_pos)
     return TxPdo2(slave_id, kServAbsPosSet, abs_pos);
 }
 
-ssize_t maxon::SetMotorRelPos(__u8 slave_id, __s32 relative_pos){
+ssize_t maxon::SetMotorRelPos(__u8 slave_id, __s32 relative_pos)
+{
     return TxPdo2(slave_id, kServRelPosSet, relative_pos);
 }
 
@@ -144,16 +145,16 @@ void maxon::CanDisPatch(void)
 
     switch (SlaveId)
     {
-    case kClaw:
+    case kUpClaw:
         // get the node id
-        claw_->motor_id = SlaveId;
+        upclaw_->motor_id = SlaveId;
         // read the parameters
-        MotorParaRead(cob_id, claw_, recv_frame);
+        MotorParaRead(cob_id, upclaw_, recv_frame);
         break;
 
     case kUpWheel:
-        up_wheel_->motor_id = SlaveId;
-        MotorParaRead(cob_id, up_wheel_, recv_frame);
+        upwheel_->motor_id = SlaveId;
+        MotorParaRead(cob_id, upwheel_, recv_frame);
         break;
 
     default:
@@ -222,4 +223,32 @@ void maxon::MotorParaRead(__u16 cob_id, maxon_type *motor, can_frame *recv_frame
     default:
         break;
     }
+}
+
+// move to relative position
+void maxon::MoveRelative(__u8 slave_id, __s32 relative_pos)
+{
+    // wait epos
+    usleep(kDelayEpos);
+    SetMotorRelPos(slave_id, relative_pos);
+    usleep(kDelayEpos);
+    SetCtrlWrd(slave_id, 0x000F);
+}
+
+// move to absolute position
+void maxon::MoveAbsolute(__u8 slave_id, __s32 absolute_pos)
+{
+    // wait epos
+    usleep(kDelayEpos);
+    SetMotorRelPos(slave_id, absolute_pos);
+    usleep(kDelayEpos);
+    SetCtrlWrd(slave_id, 0x000F);
+}
+
+// quick stop motor
+void maxon::MotorQuickStop(__u8 slave_id)
+{
+    // wait epos
+    usleep(kDelayEpos);
+    SetCtrlWrd(slave_id,0x000B);
 }

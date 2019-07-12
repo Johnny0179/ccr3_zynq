@@ -12,7 +12,7 @@ struct maxon_type
     __s16 StatusWord;
     // __s32 PosSV;
     __s32 PosPV;
-    // __s32 PosLocked;
+
     // __s32 PosLimit;
     __s32 SpdSV;
     __s32 SpdPV;
@@ -24,7 +24,15 @@ struct maxon_type
     // __s32 PosPV_Last;
 
     /* ------------------put new variables blow this line---------------- */
-    // __s16 MaxCurrenLimit;
+    // homming
+    __u16 homing_state;
+    __u16 homing_en;
+
+    //homing threhold
+    __u16 homing_threhold;
+    __u16 homing_delta_pos;
+
+    __s32 PosLocked;
 };
 
 class maxon : public can
@@ -61,22 +69,21 @@ private:
     static const __u16 kNODE_GUARD = (__u16)0xE << 7;
     static const __u16 kLSS = (__u16)0xF << 7;
 
-
-
 public:
     // can device
     can can0;
-
+    // delay_time 20ms
+    static const __u32 kDelayEpos = 20000;
     /* variable */
     // Motor number
     static const __u8 kMotorNum = 2;
 
     /* Motor node id List */
-    static const __u8 kClaw = 1;
+    static const __u8 kUpClaw = 1;
     static const __u8 kUpWheel = 2;
 
     // motors
-    maxon_type *claw_, *up_wheel_;
+    maxon_type *upclaw_, *upwheel_;
 
     // canopen
     ssize_t TxPdo1(__u8 slave_id, __u16 ctrl_wrd);
@@ -100,9 +107,16 @@ public:
 
     // set current limit
     ssize_t SetMotorCurrentLimit(__u8 slave_id, __s32 max_current_limit);
-
+    // enable motor
     void MotorEnable(__u8 slave_id);
+    // disable motor
     void MotorDisable(__u8 slave_id);
+    // quick stop motor
+    void MotorQuickStop(__u8 slave_id);
+    // move to relative position
+    void MoveRelative(__u8 slave_id, __s32 relative_pos);
+    // move to absolute position
+    void MoveAbsolute(__u8 slave_id, __s32 absolute_pos);
 
     maxon(void);
     ~maxon();
