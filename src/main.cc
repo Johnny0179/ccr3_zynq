@@ -43,10 +43,10 @@ int main()
     }
 
     // sleep(5);
-    if (ccr3.NMTstart() != -1)
-    {
-        printf("NMT started!\n");
-    }
+    // if (ccr3.NMTstart() != -1)
+    // {
+    //     printf("NMT started!\n");
+    // }
 
     
     // // delay 200ms

@@ -72,8 +72,8 @@ private:
 public:
     // can device
     can can0;
-    // delay_time 20ms
-    static const __u32 kDelayEpos = 20000;
+    // delay_time 100ms
+    static const __u32 kDelayEpos = 100000;
     /* variable */
     // Motor number
     static const __u8 kMotorNum = 2;

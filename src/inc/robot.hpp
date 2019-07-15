@@ -15,7 +15,7 @@ struct robot_type
     __u16 debug_mode_select;
 
     // debug motor select
-    __u16 debug_motor_select;
+    __u16 debug_done;
 
     // debug enable?
     __u16 debug_en;

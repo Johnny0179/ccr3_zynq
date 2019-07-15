@@ -47,14 +47,17 @@ void robot::system(void)
     {
         // robot operate mode select
     case kIdleMode:
-        if (robot_->mode_select == kIdleMode)
+        if (robot_->mode_select == kIdleMode || robot_->debug_mode_select == 0)
         {
             robot_->system_state = kIdleMode;
-            // stop NMT
-            NMTstop();
         }
         else if (robot_->mode_select == kDebugMode)
         {
+            // start NMT
+            if (NMTstart() != -1)
+            {
+                printf("NMT started!\n");
+            }
             robot_->system_state = kDebugMode;
         }
         else
@@ -66,15 +69,16 @@ void robot::system(void)
 
         // debug mode
     case kDebugMode:
-        if (robot_->debug_en == 0)
-        {
-            // return to idle
-            robot_->system_state = kIdleMode;
-        }
-        else
+
+        if (robot_->debug_en == 1)
         {
             // start NMT
-            NMTstart();
+            if (NMTstart() != -1)
+            {
+                printf("NMT started!\n");
+            }
+            // wait epos
+            usleep(kDelayEpos);
 
             // choose debug mode
             switch (robot_->debug_mode_select)
@@ -96,6 +100,19 @@ void robot::system(void)
             default:
                 break;
             }
+        }
+
+        if (robot_->debug_mode_select != 0)
+        {
+            robot_->system_state = kDebugMode;
+        }
+        else
+        {
+            // change to idle
+            robot_->system_state = kIdleMode;
+
+            // stop NMT
+            NMTstop();
         }
 
         break;
