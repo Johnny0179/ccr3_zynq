@@ -28,6 +28,17 @@ ssize_t robot::NMTstart(void)
     return can0.send(&nmt_frame);
 }
 
+ssize_t robot::NMTPreOperation(void)
+{
+    can_frame nmt_frame;
+    // nmt frame init
+    nmt_frame.can_id = kNMT;
+    nmt_frame.can_dlc = 2;
+    nmt_frame.data[0] = kNMT_Enter_PreOperational;
+    nmt_frame.data[1] = 0;
+    return can0.send(&nmt_frame);
+}
+
 ssize_t robot::NMTstop(void)
 {
     can_frame nmt_frame;
@@ -50,6 +61,10 @@ void robot::system(void)
         if (robot_->mode_select == kIdleMode || robot_->debug_mode_select == 0)
         {
             robot_->system_state = kIdleMode;
+            // clear variables
+            robot_->upclaw_debug_factor=0;
+            robot_->upwheel_debug_factor=0;
+            robot_->pulleys_debug_factor=0;
         }
         else if (robot_->mode_select == kDebugMode)
         {
@@ -93,8 +108,12 @@ void robot::system(void)
                 UpWheelDebug();
                 break;
 
-            case kUpClawHomingDebug:
+            case kUpClawMotionDebug:
                 Homing(upclaw_);
+                break;
+
+            case kPulleysMotionDebug:
+                PulleysDebug();
                 break;
 
             default:
@@ -134,12 +153,20 @@ void robot::UpClawDebug(void)
     robot_->debug_en = 0;
 }
 
+// UpWheel Debug
 void robot::UpWheelDebug(void)
 {
-    // enable claw motor
-    MotorEnable(kUpWheel);
 
     MoveRelative(kUpWheel, robot_->upwheel_debug_factor * kUpWheelDebugRelaPos);
+
+    // disable the debug
+    robot_->debug_en = 0;
+}
+
+// Pulleys Debug
+void robot::PulleysDebug(void)
+{
+    MoveRelative(kPulley1, kPulley2, robot_->pulleys_debug_factor * kPulleysDebugRelaPos);
 
     // disable the debug
     robot_->debug_en = 0;

@@ -57,19 +57,53 @@ ssize_t maxon::TxPdo3(__u8 slave_id, __s32 speed_set)
     return can0.send(&tx_pdo3_frame);
 }
 
-// TxPDO4
-ssize_t maxon::TxPdo4(__u8 slave_id, __s32 max_current_limit)
+// TxPDO4 operation mode set
+ssize_t maxon::TxPdo4(__u8 slave_id, __u16 mode_of_operation)
 {
     can_frame tx_pdo4_frame;
 
     // tx_pdo4 frame init
     tx_pdo4_frame.can_id = kPDO4rx + slave_id;
-    tx_pdo4_frame.can_dlc = 4;
-    tx_pdo4_frame.data[0] = max_current_limit & 0xff;
-    tx_pdo4_frame.data[1] = (max_current_limit >> 8) & 0xff;
-    tx_pdo4_frame.data[2] = 0;
-    tx_pdo4_frame.data[3] = 0;
+    tx_pdo4_frame.can_dlc = 1;
+    tx_pdo4_frame.data[0] = mode_of_operation;
+
     return can0.send(&tx_pdo4_frame);
+}
+
+// TxPDO4 CST mode
+ssize_t maxon::TxPdo4(__u8 slave_id, __u16 mode_of_operation, __u16 torque_offset, __u16 target_torque)
+{
+    can_frame tx_pdo4_frame;
+
+    // tx_pdo4 frame init
+    tx_pdo4_frame.can_id = kPDO4rx + slave_id;
+
+    tx_pdo4_frame.can_dlc = 5;
+    tx_pdo4_frame.data[0] = mode_of_operation;
+    tx_pdo4_frame.data[1] = torque_offset & 0xff;
+    tx_pdo4_frame.data[2] = (torque_offset >> 8) & 0xff;
+    tx_pdo4_frame.data[3] = target_torque & 0xff;
+    tx_pdo4_frame.data[4] = (target_torque >> 8) & 0xff;
+
+    return can0.send(&tx_pdo4_frame);
+}
+
+// sdo write 8bit
+ssize_t maxon::SdoWrU8(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
+{
+    can_frame sdo_rx_frame;
+    sdo_rx_frame.can_id = kSDOrx + slave_id;
+    sdo_rx_frame.can_dlc = 8;
+    sdo_rx_frame.data[0] = 0x2F;
+    sdo_rx_frame.data[1] = index & 0xff;
+    sdo_rx_frame.data[2] = (index >> 8) & 0xff;
+    sdo_rx_frame.data[3] = subindex;
+    sdo_rx_frame.data[4] = data & 0xff;
+    sdo_rx_frame.data[5] = 0;
+    sdo_rx_frame.data[6] = 0;
+    sdo_rx_frame.data[7] = 0;
+
+    return can0.send(&sdo_rx_frame);
 }
 
 // sdo write 32bit
@@ -126,9 +160,9 @@ ssize_t maxon::SetMotorSpeed(__u8 slave_id, __s32 speed_set)
     return TxPdo3(slave_id, speed_set);
 }
 
-ssize_t maxon::SetMotorCurrentLimit(__u8 slave_id, __s32 max_current_limit)
+ssize_t maxon::SetMotorOperationMode(__u8 slave_id, __u16 mode_of_operation)
 {
-    return TxPdo4(slave_id, max_current_limit);
+    return TxPdo4(slave_id, mode_of_operation);
 }
 
 // read the can frame
@@ -195,7 +229,7 @@ void maxon::MotorParaRead(__u16 cob_id, maxon_type *motor, can_frame *recv_frame
         motor->StatusWord = (__u16)(recv_frame->data[1] << 8) | recv_frame->data[0];
         motor->ServErr = (__u16)((recv_frame->data[3] << 8) | recv_frame->data[2]);
         motor->TrqPV = (__s16)((recv_frame->data[5] << 8) | recv_frame->data[4]);
-        motor->CtrlMode = recv_frame->data[6];
+        motor->mode_display = recv_frame->data[6];
         break;
 
         // case PDO1rx: // 0x200
@@ -228,11 +262,35 @@ void maxon::MotorParaRead(__u16 cob_id, maxon_type *motor, can_frame *recv_frame
 // move to relative position
 void maxon::MoveRelative(__u8 slave_id, __s32 relative_pos)
 {
+    // enable claw motor
+    MotorEnable(kUpWheel);
+
     // wait epos
     usleep(kDelayEpos);
     SetMotorRelPos(slave_id, relative_pos);
     usleep(kDelayEpos);
     SetCtrlWrd(slave_id, 0x000F);
+}
+
+// move to relative position, 2 motors
+void maxon::MoveRelative(__u8 slave_id1, __u8 slave_id2, __s32 relative_pos)
+{
+    // enable motor1
+    MotorEnable(slave_id1);
+
+    // enable motor2
+    MotorEnable(slave_id2);
+
+    // wait epos
+    usleep(kDelayEpos);
+    SetMotorRelPos(slave_id1, relative_pos);
+    usleep(kDelayEpos);
+    SetMotorRelPos(slave_id2, relative_pos);
+
+    usleep(kDelayEpos);
+    SetCtrlWrd(slave_id1, 0x000F);
+    usleep(kDelayEpos);
+    SetCtrlWrd(slave_id2, 0x000F);
 }
 
 // move to absolute position
@@ -250,5 +308,5 @@ void maxon::MotorQuickStop(__u8 slave_id)
 {
     // wait epos
     usleep(kDelayEpos);
-    SetCtrlWrd(slave_id,0x000B);
+    SetCtrlWrd(slave_id, 0x000B);
 }

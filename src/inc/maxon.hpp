@@ -5,7 +5,7 @@
 struct maxon_type
 {
     __u16 motor_id;
-    __u16 CtrlMode;
+    __u16 mode_display;
     // __u16 ServSTA;
     __u16 ServErr;
     // __u16 CtrlWord;
@@ -24,6 +24,13 @@ struct maxon_type
     // __s32 PosPV_Last;
 
     /* ------------------put new variables blow this line---------------- */
+    // mode of operation select
+    __u16 mode_of_opreation;
+    // Torque offset
+    __u16 torque_offset;
+    // target torque
+    __u16 target_torque;
+
     // homming
     __u16 homing_state;
     __u16 homing_en;
@@ -43,6 +50,12 @@ private:
     static const __u32 kNominalCurrent = 5030;
     // max speed 16100 rpm
     static const __u32 kMaxSpeed = 16100;
+
+    /* mode of operation */
+    // PPM
+    static const __u16 kPPM = 0x01;
+    // CST
+    static const __u16 kCST = 0x0A;
 
     /* motor canopen parameters */
     static const __u32 kServOnPre = 0x0006;
@@ -81,6 +94,8 @@ public:
     /* Motor node id List */
     static const __u8 kUpClaw = 1;
     static const __u8 kUpWheel = 2;
+    static const __u8 kPulley1 = 3;
+    static const __u8 kPulley2 = 4;
 
     // motors
     maxon_type *upclaw_, *upwheel_;
@@ -89,8 +104,15 @@ public:
     ssize_t TxPdo1(__u8 slave_id, __u16 ctrl_wrd);
     ssize_t TxPdo2(__u8 slave_id, __u16 ctrl_wrd, __s32 pos_sv);
     ssize_t TxPdo3(__u8 slave_id, __s32 speed_set);
-    ssize_t TxPdo4(__u8 slave_id, __s32 max_current_limit);
 
+    //for mode set
+    ssize_t TxPdo4(__u8 slave_id, __u16 mode_of_operation);
+    // for CST mode
+    ssize_t TxPdo4(__u8 slave_id, __u16 mode_of_operation, __u16 torque_offset, __u16 target_torque);
+
+    // sdo 8bit write
+    ssize_t SdoWrU8(__u8 slave_id, __u16 index, __u8 subindex, __u32 data);
+    // sdo 32bit write
     ssize_t SdoWrU32(__u8 slave_id, __u16 index, __u8 subindex, __u32 data);
 
     /* ----------------------------motor control--------------------------------- */
@@ -105,16 +127,19 @@ public:
     // set motor speed
     ssize_t SetMotorSpeed(__u8 slave_id, __s32 speed_set);
 
-    // set current limit
-    ssize_t SetMotorCurrentLimit(__u8 slave_id, __s32 max_current_limit);
+    // set operation mode
+    ssize_t SetMotorOperationMode(__u8 slave_id, __u16 mode_of_operation);
     // enable motor
     void MotorEnable(__u8 slave_id);
     // disable motor
     void MotorDisable(__u8 slave_id);
     // quick stop motor
     void MotorQuickStop(__u8 slave_id);
+
     // move to relative position
     void MoveRelative(__u8 slave_id, __s32 relative_pos);
+    // move to relative positon 2 motors
+    void MoveRelative(__u8 slave_id1,__u8 slave_id2,__s32 relative_pos);
     // move to absolute position
     void MoveAbsolute(__u8 slave_id, __s32 absolute_pos);
 

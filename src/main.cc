@@ -42,15 +42,28 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    // sleep(5);
-    // if (ccr3.NMTstart() != -1)
-    // {
-    //     printf("NMT started!\n");
-    // }
+ /*    sleep(1);
+    if (ccr3.NMTPreOperation() != -1)
+    {
+        printf("NMT enter preopration!\n");
+    } */
+    /* 
+    // delay 20ms
+    usleep(20000);
 
+    ccr3.SdoWrU8(1, 0x1603, 0x00, 0);
     
-    // // delay 200ms
-    // usleep(200000);
+
+    // delay 20ms
+    usleep(20000);
+    
+    ccr3.SdoWrU32(1, 0x1603, 0x01, 0);
+
+    // delay 20ms
+    usleep(20000); */
+
+    //stop NMT
+    // ccr3.NMTstop();
 
     // ccr3.MotorEnable(1);
 

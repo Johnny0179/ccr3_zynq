@@ -14,7 +14,7 @@ struct robot_type
     // debug mode select
     __u16 debug_mode_select;
 
-    // debug motor select
+    // debug_done
     __u16 debug_done;
 
     // debug enable?
@@ -25,6 +25,9 @@ struct robot_type
 
     // upwheel debug factor
     __s16 upwheel_debug_factor;
+
+    // pulleys debug factor;
+    __s16 pulleys_debug_factor;
 };
 
 class robot : public maxon
@@ -62,9 +65,10 @@ private:
     static const __u16 kUpWheelMotorDebug = 2;
 
     // claw homing debug
-    static const __u16 kUpClawHomingDebug = 3;
+    static const __u16 kUpClawMotionDebug = 3;
+
     // up wheel debug
-    static const __u16 kUpWheelMotionDebug = 4;
+    static const __u16 kPulleysMotionDebug = 4;
 
     /* -------------------------robot motions------------------------------ */
 
@@ -79,13 +83,16 @@ private:
 
     //upwheel relative pos 1000inc
     static const __u32 kUpWheelDebugRelaPos = 1000;
+    //pulleys relative pos 1000inc
+    static const __u32 kPulleysDebugRelaPos = 1000;
 
 public:
     robot(USHORT reg[]);
     ~robot();
 
-    /* -------------------------NMT motions------------------------------ */
+    /* -------------------------NMT functions------------------------------ */
     ssize_t NMTstart(void);
+    ssize_t NMTPreOperation(void);
     ssize_t NMTstop(void);
 
     /* -------------------------system------------------------------ */
@@ -97,6 +104,7 @@ public:
     /* -------------------------debug function------------------------------ */
     void UpClawDebug(void);
     void UpWheelDebug(void);
+    void PulleysDebug(void);
 
     // homing
     __u16 Homing(maxon_type *motor);
