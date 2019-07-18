@@ -7,6 +7,105 @@ maxon::maxon()
 maxon::~maxon()
 {
 }
+/* -------------------------------NMT control------------------------------------ */
+void maxon::NMTstart(void)
+{
+    usleep(kDelayEpos);
+    can_frame nmt_frame;
+    // nmt frame init
+    nmt_frame.can_id = kNMT;
+    nmt_frame.can_dlc = 2;
+    nmt_frame.data[0] = kNMT_Start_Node;
+    nmt_frame.data[1] = 0;
+    if (can0.send(&nmt_frame) != -1)
+    {
+        printf("Start all nodes!");
+    }
+    else
+    {
+        printf("CAN communication error!\n");
+    }
+}
+
+void maxon::NMTstart(__u8 slave_id)
+{
+    usleep(kDelayEpos);
+    can_frame nmt_frame;
+    // nmt frame init
+    nmt_frame.can_id = kNMT;
+    nmt_frame.can_dlc = 2;
+    nmt_frame.data[0] = kNMT_Start_Node;
+    nmt_frame.data[1] = slave_id;
+    if (can0.send(&nmt_frame) != -1)
+    {
+        if (slave_id != 0)
+        {
+            printf("Start node%d!\n", slave_id);
+        }
+        else
+        {
+            printf("Start all nodes!\n");
+        }
+    }
+    else
+    {
+        printf("CAN communication error!\n");
+    }
+}
+
+void maxon::NMTPreOperation(__u8 slave_id)
+{
+    usleep(kDelayEpos);
+    can_frame nmt_frame;
+    // nmt frame init
+    nmt_frame.can_id = kNMT;
+    nmt_frame.can_dlc = 2;
+    nmt_frame.data[0] = kNMT_Enter_PreOperational;
+    nmt_frame.data[1] = 0;
+    if (can0.send(&nmt_frame) != -1)
+    {
+        printf("Node%d enter pre operation state!\n", slave_id);
+    }
+    else
+    {
+        printf("CAN communication error!\n");
+    }
+}
+
+void maxon::NMTstop(__u8 slave_id)
+{
+    can_frame nmt_frame;
+    // nmt frame init
+    nmt_frame.can_id = kNMT;
+    nmt_frame.can_dlc = 2;
+    nmt_frame.data[0] = kNMT_Stop_Node;
+    nmt_frame.data[1] = slave_id;
+    if (can0.send(&nmt_frame) != -1)
+    {
+        if (slave_id != 0)
+        {
+            printf("Stop node%d!\n", slave_id);
+        }
+        else
+        {
+            printf("Stop all nodes!\n");
+        }
+    }
+    else
+    {
+        printf("CAN communication error!\n");
+    }
+}
+/* -------------------TxPDO mapping------------------ */
+// TxPDO4 mapping
+void maxon::TxPDO4Mapping(__u8 slave_id)
+{
+    // enter preoperation state
+    NMTPreOperation(slave_id);
+    // clear past PDO mapping
+    SdoWrU8(slave_id, 0x1603, 0x00, 0);
+    // first new mapped object in RxPDO4, mode of operation
+}
 
 // TxPDO1
 ssize_t maxon::TxPdo1(__u8 slave_id, __u16 ctrl_wrd)
@@ -71,19 +170,16 @@ ssize_t maxon::TxPdo4(__u8 slave_id, __u16 mode_of_operation)
 }
 
 // TxPDO4 CST mode
-ssize_t maxon::TxPdo4(__u8 slave_id, __u16 mode_of_operation, __u16 torque_offset, __u16 target_torque)
+ssize_t maxon::TxPdo4CST(__u8 slave_id, __u16 target_torque)
 {
     can_frame tx_pdo4_frame;
 
     // tx_pdo4 frame init
     tx_pdo4_frame.can_id = kPDO4rx + slave_id;
 
-    tx_pdo4_frame.can_dlc = 5;
-    tx_pdo4_frame.data[0] = mode_of_operation;
-    tx_pdo4_frame.data[1] = torque_offset & 0xff;
-    tx_pdo4_frame.data[2] = (torque_offset >> 8) & 0xff;
-    tx_pdo4_frame.data[3] = target_torque & 0xff;
-    tx_pdo4_frame.data[4] = (target_torque >> 8) & 0xff;
+    tx_pdo4_frame.can_dlc = 2;
+    tx_pdo4_frame.data[0] = target_torque & 0xff;
+    tx_pdo4_frame.data[1] = (target_torque >> 8) & 0xff;
 
     return can0.send(&tx_pdo4_frame);
 }
@@ -91,6 +187,7 @@ ssize_t maxon::TxPdo4(__u8 slave_id, __u16 mode_of_operation, __u16 torque_offse
 // sdo write 8bit
 ssize_t maxon::SdoWrU8(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 {
+    usleep(kDelayEpos);
     can_frame sdo_rx_frame;
     sdo_rx_frame.can_id = kSDOrx + slave_id;
     sdo_rx_frame.can_dlc = 8;
@@ -106,9 +203,29 @@ ssize_t maxon::SdoWrU8(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
     return can0.send(&sdo_rx_frame);
 }
 
+// sdo write 16bit
+ssize_t maxon::SdoWrU16(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
+{
+    usleep(kDelayEpos);
+    can_frame sdo_rx_frame;
+    sdo_rx_frame.can_id = kSDOrx + slave_id;
+    sdo_rx_frame.can_dlc = 8;
+    sdo_rx_frame.data[0] = 0x2B;
+    sdo_rx_frame.data[1] = index & 0xff;
+    sdo_rx_frame.data[2] = (index >> 8) & 0xff;
+    sdo_rx_frame.data[3] = subindex;
+    sdo_rx_frame.data[4] = data & 0xff;
+    sdo_rx_frame.data[5] = (data >> 8) & 0xff;
+    sdo_rx_frame.data[6] = 0;
+    sdo_rx_frame.data[7] = 0;
+
+    return can0.send(&sdo_rx_frame);
+}
+
 // sdo write 32bit
 ssize_t maxon::SdoWrU32(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 {
+    usleep(kDelayEpos);
     can_frame sdo_rx_frame;
     sdo_rx_frame.can_id = kSDOrx + slave_id;
     sdo_rx_frame.can_dlc = 8;
@@ -128,6 +245,7 @@ ssize_t maxon::SdoWrU32(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 
 ssize_t maxon::SetCtrlWrd(__u8 slave_id, __u16 ctrl_wrd)
 {
+    usleep(kDelayEpos);
     return TxPdo1(slave_id, ctrl_wrd);
 }
 
@@ -135,23 +253,24 @@ ssize_t maxon::SetCtrlWrd(__u8 slave_id, __u16 ctrl_wrd)
 void maxon::MotorEnable(__u8 slave_id)
 {
     SetCtrlWrd(slave_id, 0x0006);
-    // delay 50ms
-    usleep(50000);
     SetCtrlWrd(slave_id, 0x000F);
 }
 
 void maxon::MotorDisable(__u8 slave_id)
 {
+
     SetCtrlWrd(slave_id, 0x0000);
 }
 
 ssize_t maxon::SetMotorAbsPos(__u8 slave_id, __s32 abs_pos)
 {
+    usleep(kDelayEpos);
     return TxPdo2(slave_id, kServAbsPosSet, abs_pos);
 }
 
 ssize_t maxon::SetMotorRelPos(__u8 slave_id, __s32 relative_pos)
-{
+{ // wait epos
+    usleep(kDelayEpos);
     return TxPdo2(slave_id, kServRelPosSet, relative_pos);
 }
 
@@ -160,11 +279,27 @@ ssize_t maxon::SetMotorSpeed(__u8 slave_id, __s32 speed_set)
     return TxPdo3(slave_id, speed_set);
 }
 
-ssize_t maxon::SetMotorOperationMode(__u8 slave_id, __u16 mode_of_operation)
+ssize_t maxon::SetTargetTorque(__u8 slave_id, __u16 target_torque)
 {
-    return TxPdo4(slave_id, mode_of_operation);
+    usleep(kDelayEpos);
+    return TxPdo4CST(slave_id, target_torque);
 }
 
+// set motor operation mode
+ssize_t maxon::SetMotorMode(__u8 slave_id, __u16 operation_mode)
+{
+    // // enter pre operation state
+    // NMTPreOperation(slave_id);
+
+    // // set modes of operation
+    // SdoWrU16(slave_id, 0x6060, 0x00, operation_mode);
+
+    // // restart node
+    // NMTstart(slave_id);
+
+    usleep(kDelayEpos);
+    return TxPdo4(slave_id, operation_mode);
+}
 // read the can frame
 void maxon::CanDisPatch(void)
 {
@@ -189,6 +324,11 @@ void maxon::CanDisPatch(void)
     case kUpWheel:
         upwheel_->motor_id = SlaveId;
         MotorParaRead(cob_id, upwheel_, recv_frame);
+        break;
+
+    case kDownClaw1:
+        downclaw1_->motor_id = SlaveId;
+        MotorParaRead(cob_id, downclaw1_, recv_frame);
         break;
 
     default:
@@ -265,10 +405,8 @@ void maxon::MoveRelative(__u8 slave_id, __s32 relative_pos)
     // enable claw motor
     MotorEnable(kUpWheel);
 
-    // wait epos
-    usleep(kDelayEpos);
     SetMotorRelPos(slave_id, relative_pos);
-    usleep(kDelayEpos);
+
     SetCtrlWrd(slave_id, 0x000F);
 }
 
@@ -281,15 +419,12 @@ void maxon::MoveRelative(__u8 slave_id1, __u8 slave_id2, __s32 relative_pos)
     // enable motor2
     MotorEnable(slave_id2);
 
-    // wait epos
-    usleep(kDelayEpos);
     SetMotorRelPos(slave_id1, relative_pos);
-    usleep(kDelayEpos);
+
     SetMotorRelPos(slave_id2, relative_pos);
 
-    usleep(kDelayEpos);
     SetCtrlWrd(slave_id1, 0x000F);
-    usleep(kDelayEpos);
+
     SetCtrlWrd(slave_id2, 0x000F);
 }
 

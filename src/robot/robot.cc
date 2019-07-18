@@ -5,49 +5,21 @@ robot::robot(USHORT reg[]) : maxon()
     // define the pointer address
     upclaw_ = (maxon_type *)&reg[100];
     upwheel_ = (maxon_type *)&reg[150];
+    downclaw1_ = (maxon_type *)&reg[200];
 
     robot_ = (robot_type *)&reg[0];
 
     // defualt debug mode
     robot_->mode_select = 1;
+
+    // defualt debug down claw 1
+    robot_->debug_mode_select=5;
+
+    // defualt RxPDOmapping
 }
 
 robot::~robot()
 {
-}
-
-/* -------------------------------NMT control------------------------------------ */
-ssize_t robot::NMTstart(void)
-{
-    can_frame nmt_frame;
-    // nmt frame init
-    nmt_frame.can_id = kNMT;
-    nmt_frame.can_dlc = 2;
-    nmt_frame.data[0] = kNMT_Start_Node;
-    nmt_frame.data[1] = 0;
-    return can0.send(&nmt_frame);
-}
-
-ssize_t robot::NMTPreOperation(void)
-{
-    can_frame nmt_frame;
-    // nmt frame init
-    nmt_frame.can_id = kNMT;
-    nmt_frame.can_dlc = 2;
-    nmt_frame.data[0] = kNMT_Enter_PreOperational;
-    nmt_frame.data[1] = 0;
-    return can0.send(&nmt_frame);
-}
-
-ssize_t robot::NMTstop(void)
-{
-    can_frame nmt_frame;
-    // nmt frame init
-    nmt_frame.can_id = kNMT;
-    nmt_frame.can_dlc = 2;
-    nmt_frame.data[0] = kNMT_Stop_Node;
-    nmt_frame.data[1] = 0;
-    return can0.send(&nmt_frame);
 }
 
 /* -------------------------------robot control---------------------------------- */
@@ -62,17 +34,16 @@ void robot::system(void)
         {
             robot_->system_state = kIdleMode;
             // clear variables
-            robot_->upclaw_debug_factor=0;
-            robot_->upwheel_debug_factor=0;
-            robot_->pulleys_debug_factor=0;
+            robot_->upclaw_debug_factor = 0;
+            robot_->upwheel_debug_factor = 0;
+            robot_->pulleys_debug_factor = 0;
         }
         else if (robot_->mode_select == kDebugMode)
         {
-            // start NMT
-            if (NMTstart() != -1)
-            {
-                printf("NMT started!\n");
-            }
+            printf("Enter debug mode!\n");
+            // start all nodes
+            NMTstart(0);
+
             robot_->system_state = kDebugMode;
         }
         else
@@ -88,10 +59,7 @@ void robot::system(void)
         if (robot_->debug_en == 1)
         {
             // start NMT
-            if (NMTstart() != -1)
-            {
-                printf("NMT started!\n");
-            }
+            NMTstart(0);
             // wait epos
             usleep(kDelayEpos);
 
@@ -100,11 +68,13 @@ void robot::system(void)
             {
                 //claw motor debug
             case kUpClawMotorDebug:
+                printf("Up Claw debug!\n");
                 UpClawDebug();
                 break;
 
                 //upwheel motor debug
             case kUpWheelMotorDebug:
+                printf("Up wheel debug!\n");
                 UpWheelDebug();
                 break;
 
@@ -114,6 +84,11 @@ void robot::system(void)
 
             case kPulleysMotionDebug:
                 PulleysDebug();
+                break;
+
+            case kDownClawHoldDebug:
+                printf("Down claw debug!\n");
+                DownClawHoldDebug();
                 break;
 
             default:
@@ -131,7 +106,7 @@ void robot::system(void)
             robot_->system_state = kIdleMode;
 
             // stop NMT
-            NMTstop();
+            NMTstop(0);
         }
 
         break;
@@ -215,4 +190,99 @@ __u16 robot::Homing(maxon_type *motor)
     }
 
     return motor->homing_state;
+}
+
+// down claw debug
+void robot::DownClawHoldDebug(void)
+{
+    // enable down claw 1
+    MotorEnable(kDownClaw1);
+    // wiat torque >3%
+    while (downclaw1_->TrqPV < 30)
+    {
+        // increase 10000 inc
+        MoveRelative(kDownClaw1, 1000);
+
+        // wait 500ms
+        usleep(500000);
+    }
+
+    // disable down claw 1
+    MotorDisable(kDownClaw1);
+
+    // change to CST mode;
+    SetMotorMode(kDownClaw1, 0x0A);
+
+    // enter pre operation state
+    NMTPreOperation(kDownClaw1);
+
+    // clear past RxPDO mapping
+    SdoWrU8(kDownClaw1, 0x1603, 0x00, 0);
+
+    // first mapped object in RxPDO4 is Target Torque
+    SdoWrU32(kDownClaw1, 0x1603, 0x01, 0x60710010);
+
+    // reset mapping object number, 1
+    SdoWrU8(kDownClaw1, 0x1603, 0x00, 1);
+
+    // restart node
+    NMTstart(kDownClaw1);
+
+    MotorEnable(kDownClaw1);
+
+    // set target torque 3%
+    SetTargetTorque(kDownClaw1, 30);
+
+    // wait
+    while (1)
+    {
+        usleep(100);
+    }
+    // ccr3.MotorDisable(1);
+    // ccr3.NMTstop(1);
+
+    // // state machine parameters
+    // static const __u8 kidle = 0;
+    // static const __u8 kPPM = 1;
+    // static const __u8 kCST = 2;
+    // static const __u8 kDebugDone = 3;
+
+    // // state machine variable
+    // static __u8 state = 0;
+
+    // while (state != kDebugDone)
+    // {
+    //     switch (state)
+    //     {
+    //     case kidle:
+    //         state = kPPM;
+    //         break;
+
+    //     case kPPM:
+    //         // target torque <3%
+    //         if (downclaw1_->TrqPV < 30)
+    //         {
+    //             // enable down claw 1
+    //             MotorEnable(kDownClaw1);
+    //             // increase 10000 inc
+    //             MoveRelative(kDownClaw1, 10000);
+    //             // disable down claw 1
+    //             MotorDisable(kDownClaw1);
+    //         }
+    //         else
+    //         {
+    //             // change to CST state
+    //             state = kCST;
+    //         }
+
+    //     case kCST:
+
+    //         break;
+
+    //         break;
+
+    //     default:
+    //         break;
+    //     }
+    // }
 }

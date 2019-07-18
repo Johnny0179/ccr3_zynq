@@ -42,38 +42,42 @@ int main()
         exit(EXIT_FAILURE);
     }
 
- /*    sleep(1);
-    if (ccr3.NMTPreOperation() != -1)
-    {
-        printf("NMT enter preopration!\n");
-    } */
-    /* 
-    // delay 20ms
-    usleep(20000);
-
-    ccr3.SdoWrU8(1, 0x1603, 0x00, 0);
-    
-
-    // delay 20ms
-    usleep(20000);
-    
-    ccr3.SdoWrU32(1, 0x1603, 0x01, 0);
-
-    // delay 20ms
-    usleep(20000); */
-
-    //stop NMT
-    // ccr3.NMTstop();
+    /* --------------test-------------------------------- */
+    // ccr3.NMTstart(0);
 
     // ccr3.MotorEnable(1);
 
-    // // delay 50ms, delay enough time to wait the EPOS operate!
-    // usleep(200000);
-    // ccr3.SetMotorRelPos(1, -20000);
+    // ccr3.MoveRelative(1, -50000);
+    // sleep(1);
+    // ccr3.MotorDisable(1);
 
-    // usleep(200000);
-    // ccr3.SetCtrlWrd(1, 0x000F);
+    // // change to CST mode
+    // ccr3.SetMotorMode(1, 0x0A);
 
+    // // change to NMT preoperation state
+    // ccr3.NMTPreOperation(1);
+
+    // // clear past RxPDO mapping
+    // ccr3.SdoWrU8(1, 0x1603, 0x00, 0);
+
+    // // first mapped object in RxPDO4 is Target Torque
+    // ccr3.SdoWrU32(1, 0x1603, 0x01, 0x60710010);
+
+    // // second mapped object in RxPDO4 is Torque Offset
+    // // ccr3.SdoWrU32(1, 0x1603, 0x02, 0x60B20010);
+
+    // ccr3.SdoWrU8(1, 0x1603, 0x00, 1);
+
+    // // restart node
+    // ccr3.NMTstart(1);
+    // ccr3.MotorEnable(1);
+
+    // // set target torque 2%
+    // ccr3.SetTargetTorque(1, -20);
+    // // ccr3.MotorDisable(1);
+    // // ccr3.NMTstop(1);
+
+    /* -------------------------test end-------------------------------- */
     while (1)
     {
         ccr3.system();

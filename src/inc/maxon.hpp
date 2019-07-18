@@ -66,7 +66,19 @@ private:
     static const __u32 kServRelPosSet = 0x007F;
     static const __u32 kServHaltBit = 0x0100;
 
-    // static const __u32 TIME_INTERVAL_US = 2000;
+    /* NMT Command Specifier, sent by master to change a slave state */
+    /* ------------------------------------------------------------- */
+    /* Should not be modified */
+    static const __u16 kNMT_Start_Node = 0x01;
+    static const __u16 kNMT_Stop_Node = 0x02;
+    static const __u16 kNMT_Enter_PreOperational = 0x80;
+    static const __u16 kNMT_Reset_Node = 0x81;
+    static const __u16 kNMT_Reset_Comunication = 0x82;
+
+    /* CANopen Function Codes */
+    static const __u16 kNMT = (__u16)0x0 << 7;
+    static const __u16 kSYNC = (__u16)0x1 << 7;
+    static const __u16 kTIME_STAMP = (__u16)0x2 << 7;
 
     /* CANopen Function Codes */
     static const __u16 kPDO1tx = (__u16)0x3 << 7;
@@ -85,8 +97,8 @@ private:
 public:
     // can device
     can can0;
-    // delay_time 100ms
-    static const __u32 kDelayEpos = 100000;
+    // delay_time wait for epos 20ms
+    static const __u32 kDelayEpos = 20000;
     /* variable */
     // Motor number
     static const __u8 kMotorNum = 2;
@@ -96,9 +108,22 @@ public:
     static const __u8 kUpWheel = 2;
     static const __u8 kPulley1 = 3;
     static const __u8 kPulley2 = 4;
+    static const __u8 kDownClaw1 = 5;
+    static const __u8 kDownClaw2 = 6;
 
     // motors
-    maxon_type *upclaw_, *upwheel_;
+    maxon_type *upclaw_, *upwheel_,*downclaw1_;
+
+     /* -------------------------NMT functions------------------------------ */
+    void NMTstart(void);
+    void NMTstart(__u8 slave_id);
+    void NMTPreOperation(__u8 slave_id);
+    void NMTstop(__u8 slave_id);
+
+    /* TxPDO mapping */
+    void TxPDO4Mapping(__u8 slave_id);
+
+    
 
     // canopen
     ssize_t TxPdo1(__u8 slave_id, __u16 ctrl_wrd);
@@ -108,10 +133,12 @@ public:
     //for mode set
     ssize_t TxPdo4(__u8 slave_id, __u16 mode_of_operation);
     // for CST mode
-    ssize_t TxPdo4(__u8 slave_id, __u16 mode_of_operation, __u16 torque_offset, __u16 target_torque);
+    ssize_t TxPdo4CST(__u8 slave_id, __u16 target_torque);
 
     // sdo 8bit write
     ssize_t SdoWrU8(__u8 slave_id, __u16 index, __u8 subindex, __u32 data);
+    // sdo 16bit write
+    ssize_t SdoWrU16(__u8 slave_id, __u16 index, __u8 subindex, __u32 data);
     // sdo 32bit write
     ssize_t SdoWrU32(__u8 slave_id, __u16 index, __u8 subindex, __u32 data);
 
@@ -127,8 +154,9 @@ public:
     // set motor speed
     ssize_t SetMotorSpeed(__u8 slave_id, __s32 speed_set);
 
-    // set operation mode
-    ssize_t SetMotorOperationMode(__u8 slave_id, __u16 mode_of_operation);
+    // set motor operation mode
+    ssize_t SetMotorMode(__u8 slave_id, __u16 operation_mode);
+
     // enable motor
     void MotorEnable(__u8 slave_id);
     // disable motor
@@ -139,9 +167,13 @@ public:
     // move to relative position
     void MoveRelative(__u8 slave_id, __s32 relative_pos);
     // move to relative positon 2 motors
-    void MoveRelative(__u8 slave_id1,__u8 slave_id2,__s32 relative_pos);
+    void MoveRelative(__u8 slave_id1, __u8 slave_id2, __s32 relative_pos);
     // move to absolute position
     void MoveAbsolute(__u8 slave_id, __s32 absolute_pos);
+
+    
+    // set target torque
+    ssize_t SetTargetTorque(__u8 slave_id, __u16 target_torque);
 
     maxon(void);
     ~maxon();

@@ -28,26 +28,14 @@ struct robot_type
 
     // pulleys debug factor;
     __s16 pulleys_debug_factor;
+
+    // down claw 1 debug factor;
 };
 
 class robot : public maxon
 {
 private:
     robot_type *robot_;
-
-    /* NMT Command Specifier, sent by master to change a slave state */
-    /* ------------------------------------------------------------- */
-    /* Should not be modified */
-    static const __u16 kNMT_Start_Node = 0x01;
-    static const __u16 kNMT_Stop_Node = 0x02;
-    static const __u16 kNMT_Enter_PreOperational = 0x80;
-    static const __u16 kNMT_Reset_Node = 0x81;
-    static const __u16 kNMT_Reset_Comunication = 0x82;
-
-    /* CANopen Function Codes */
-    static const __u16 kNMT = (__u16)0x0 << 7;
-    static const __u16 kSYNC = (__u16)0x1 << 7;
-    static const __u16 kTIME_STAMP = (__u16)0x2 << 7;
 
     /* -------------------------robot modes------------------------------- */
     // idle mode
@@ -70,6 +58,11 @@ private:
     // up wheel debug
     static const __u16 kPulleysMotionDebug = 4;
 
+    // up claw hold motion
+    static const __u16 kDownClawHoldDebug = 5;
+
+    /* debug state machine */
+
     /* -------------------------robot motions------------------------------ */
 
     //homing states
@@ -90,21 +83,18 @@ public:
     robot(USHORT reg[]);
     ~robot();
 
-    /* -------------------------NMT functions------------------------------ */
-    ssize_t NMTstart(void);
-    ssize_t NMTPreOperation(void);
-    ssize_t NMTstop(void);
-
     /* -------------------------system------------------------------ */
     void system(void);
 
     /* -------------------------robot control------------------------------ */
 
- 
     /* -------------------------debug function------------------------------ */
     void UpClawDebug(void);
     void UpWheelDebug(void);
     void PulleysDebug(void);
+
+    // up claw hold debug
+    void DownClawHoldDebug(void);
 
     // homing
     __u16 Homing(maxon_type *motor);
