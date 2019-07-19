@@ -98,13 +98,20 @@ void maxon::NMTstop(__u8 slave_id)
 }
 /* -------------------TxPDO mapping------------------ */
 // TxPDO4 mapping
-void maxon::TxPDO4Mapping(__u8 slave_id)
+void maxon::TxPDO4Remap(__u8 slave_id, __u32 object_value)
 {
     // enter preoperation state
     NMTPreOperation(slave_id);
     // clear past PDO mapping
     SdoWrU8(slave_id, 0x1603, 0x00, 0);
     // first new mapped object in RxPDO4, mode of operation
+    SdoWrU32(slave_id, 0x1603, 0x01, object_value);
+
+    // reset mapping object number, 1
+    SdoWrU8(slave_id, 0x1603, 0x00, 1);
+
+    // restart node
+    NMTstart(slave_id);
 }
 
 // TxPDO1

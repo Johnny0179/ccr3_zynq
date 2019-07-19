@@ -81,8 +81,8 @@ int main()
     while (1)
     {
         ccr3.system();
-        // delay 100us
-        usleep(100);
+        // delay 1us
+        usleep(1);
     }
     return 0;
 }
@@ -127,8 +127,8 @@ void *CanRecvThread(void *arg)
 
     while (1)
     {
-        // delay 1ms
-        usleep(1000);
+        // delay 1us
+        usleep(1);
         ccr3.CanDisPatch();
     }
 }

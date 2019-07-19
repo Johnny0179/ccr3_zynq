@@ -13,7 +13,7 @@ robot::robot(USHORT reg[]) : maxon()
     robot_->mode_select = 1;
 
     // defualt debug down claw 1
-    robot_->debug_mode_select=5;
+    robot_->debug_mode_select = 5;
 
     // defualt RxPDOmapping
 }
@@ -195,17 +195,17 @@ __u16 robot::Homing(maxon_type *motor)
 // down claw debug
 void robot::DownClawHoldDebug(void)
 {
-    // enable down claw 1
-    MotorEnable(kDownClaw1);
-    // wiat torque >3%
-    while (downclaw1_->TrqPV < 30)
-    {
-        // increase 10000 inc
-        MoveRelative(kDownClaw1, 1000);
+    // // enable down claw 1
+    // MotorEnable(kDownClaw1);
 
-        // wait 500ms
-        usleep(500000);
-    }
+    // // increase 10000 inc
+    // MoveRelative(kDownClaw1, 500000);
+
+    // // wiat torque >20%
+    // while (abs(downclaw1_->TrqPV) < 200)
+    // {
+    //     printf("torque: %d%\n",abs(downclaw1_->TrqPV/10));
+    // }
 
     // disable down claw 1
     MotorDisable(kDownClaw1);
@@ -230,14 +230,64 @@ void robot::DownClawHoldDebug(void)
 
     MotorEnable(kDownClaw1);
 
-    // set target torque 3%
-    SetTargetTorque(kDownClaw1, 30);
+    // set initial target torque 30%
+    SetTargetTorque(kDownClaw1, kDownClawInitialTorque);
 
-    // wait
-    while (1)
+    // set to 20%
+    while (downclaw1_->TrqPV > 0.5 * kDownClawHoldTorque)
     {
-        usleep(100);
+        SetTargetTorque(kDownClaw1, 0.2 * kDownClawHoldTorque);
+        // usleep(kDownClawDelayUs);
+        printf("torque: %d%\n",downclaw1_->TrqPV/10);
     }
+
+    // set to 40%
+    while (downclaw1_->TrqPV < 0.4 * kDownClawHoldTorque)
+    {
+        SetTargetTorque(kDownClaw1, 0.4 * kDownClawHoldTorque);
+        // usleep(kDownClawDelayUs);
+        printf("torque: %d%\n",downclaw1_->TrqPV/10);
+    }
+
+    // set to 60%
+    while (downclaw1_->TrqPV < 0.6 * kDownClawHoldTorque)
+    {
+        SetTargetTorque(kDownClaw1, 0.6 * kDownClawHoldTorque);
+        // usleep(kDownClawDelayUs);
+        printf("torque: %d%\n",downclaw1_->TrqPV/10);
+    }
+
+    // set to 80%
+    while (downclaw1_->TrqPV < 0.8 * kDownClawHoldTorque)
+    {
+        SetTargetTorque(kDownClaw1, 0.8 * kDownClawHoldTorque);
+        // usleep(kDownClawDelayUs);
+        printf("torque: %d%\n",downclaw1_->TrqPV/10);
+    }
+
+    // set to 100%
+    while (downclaw1_->TrqPV < kDownClawHoldTorque)
+    {
+        SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
+        // usleep(kDownClawDelayUs);
+        printf("torque: %d%\n",downclaw1_->TrqPV/10);
+    }
+
+    sleep(2);
+    MotorDisable(kDownClaw1);
+
+    // remap
+    TxPDO4Remap(kDownClaw1, kOBJModeOfOperation);
+
+    // change to PPM mode;
+    SetMotorMode(kDownClaw1, 0x01);
+
+    MotorEnable(kDownClaw1);
+    MoveRelative(kDownClaw1, kDownClawLooseDistance);
+
+    // disable the debug
+    robot_->debug_en = 0;
+
     // ccr3.MotorDisable(1);
     // ccr3.NMTstop(1);
 

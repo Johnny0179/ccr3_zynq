@@ -97,8 +97,12 @@ private:
 public:
     // can device
     can can0;
-    // delay_time wait for epos 20ms
-    static const __u32 kDelayEpos = 20000;
+
+    // motors
+    maxon_type *upclaw_, *upwheel_, *downclaw1_;
+
+    // delay_time wait for epos 50ms
+    static const __u32 kDelayEpos = 50000;
     /* variable */
     // Motor number
     static const __u8 kMotorNum = 2;
@@ -111,19 +115,30 @@ public:
     static const __u8 kDownClaw1 = 5;
     static const __u8 kDownClaw2 = 6;
 
-    // motors
-    maxon_type *upclaw_, *upwheel_,*downclaw1_;
+    /* --------------------PDO mapping object value---------------------------- */
+    // mode of operation object vlaue
+    static const __u32 kOBJModeOfOperation = 0x60600008;
+    // target torque object value
+    static const __u32 kOBJTargetTorque = 0x60710010;
 
-     /* -------------------------NMT functions------------------------------ */
+    /* -------------------debug parameters------------------------------------ */
+    // down claw debug parameters
+    static const __u16 kDownClawInitialTorque = 400;//per thousand of “Motor rated torque
+
+    static const __u16 kDownClawHoldTorque = 80;
+
+    static const __useconds_t kDownClawDelayUs = 500000;
+
+    static const __s32 kDownClawLooseDistance = -400000;
+
+    /* -------------------------NMT functions------------------------------ */
     void NMTstart(void);
     void NMTstart(__u8 slave_id);
     void NMTPreOperation(__u8 slave_id);
     void NMTstop(__u8 slave_id);
 
     /* TxPDO mapping */
-    void TxPDO4Mapping(__u8 slave_id);
-
-    
+    void TxPDO4Remap(__u8 slave_id, __u32 object_value);
 
     // canopen
     ssize_t TxPdo1(__u8 slave_id, __u16 ctrl_wrd);
@@ -171,7 +186,6 @@ public:
     // move to absolute position
     void MoveAbsolute(__u8 slave_id, __s32 absolute_pos);
 
-    
     // set target torque
     ssize_t SetTargetTorque(__u8 slave_id, __u16 target_torque);
 
