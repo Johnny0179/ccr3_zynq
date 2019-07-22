@@ -26,8 +26,11 @@ struct robot_type
     // upwheel debug factor
     __s16 upwheel_debug_factor;
 
-    // pulleys debug factor;
-    __s16 pulleys_debug_factor;
+    // pulleys distance factor;
+    __s16 pulleys_distance_factor;
+
+    // pulleys homing torque
+    __s16 pulleys_homing_torque;
 
     // down claw 1 debug;
     __s16 down_claw_debug_loose;
@@ -56,11 +59,16 @@ private:
     // claw homing debug
     static const __u16 kUpClawMotionDebug = 3;
 
-    // up wheel debug
+    // pulley motion debug
     static const __u16 kPulleysMotionDebug = 4;
 
+    // pulley homing debug
+    static const __u16 kPulleysHomingDebug = 5;
+
     // up claw hold motion
-    static const __u16 kDownClawHoldDebug = 5;
+    static const __u16 kDownClawHoldDebug = 6;
+
+    // 
 
     /* debug state machine */
 
@@ -78,7 +86,7 @@ private:
     //upwheel relative pos 1000inc
     static const __u32 kUpWheelDebugRelaPos = 1000;
     //pulleys relative pos 1000inc
-    static const __u32 kPulleysDebugRelaPos = 1000;
+    static const __u32 kPulleysDebugRelaPos = 100;
 
 public:
     robot(USHORT reg[]);
@@ -93,6 +101,7 @@ public:
     void UpClawDebug(void);
     void UpWheelDebug(void);
     void PulleysDebug(void);
+    void PulleysHomingDebug(void);
 
     // up claw hold debug
     void DownClawHoldDebug(void);

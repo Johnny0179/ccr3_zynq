@@ -6,14 +6,16 @@ robot::robot(USHORT reg[]) : maxon()
     upclaw_ = (maxon_type *)&reg[100];
     upwheel_ = (maxon_type *)&reg[150];
     downclaw1_ = (maxon_type *)&reg[200];
+    pulley1_ = (maxon_type *)&reg[250];
+    pulley2_ = (maxon_type *)&reg[300];
 
     robot_ = (robot_type *)&reg[0];
 
     // defualt debug mode
     robot_->mode_select = 1;
 
-    // defualt debug down claw 1
-    robot_->debug_mode_select = 5;
+    // defualt debug pulleys
+    robot_->debug_mode_select = 4;
 
     // defualt RxPDOmapping
 }
@@ -36,7 +38,7 @@ void robot::system(void)
             // clear variables
             robot_->upclaw_debug_factor = 0;
             robot_->upwheel_debug_factor = 0;
-            robot_->pulleys_debug_factor = 0;
+            robot_->pulleys_distance_factor = 0;
         }
         else if (robot_->mode_select == kDebugMode)
         {
@@ -83,7 +85,14 @@ void robot::system(void)
                 break;
 
             case kPulleysMotionDebug:
+                printf("Pulley motion debug!\n");
                 PulleysDebug();
+                break;
+
+                // pulleys homing
+            case kPulleysHomingDebug:
+                printf("Pulley homing debug!\n");
+                PulleysHomingDebug();
                 break;
 
             case kDownClawHoldDebug:
@@ -141,10 +150,45 @@ void robot::UpWheelDebug(void)
 // Pulleys Debug
 void robot::PulleysDebug(void)
 {
-    MoveRelative(kPulley1, kPulley2, robot_->pulleys_debug_factor * kPulleysDebugRelaPos);
+    // disable pulleys
+    MotorDisable(kPulley1);
+    MotorDisable(kPulley2);
+
+    // remap TxPdo4 to mode of operation
+    TxPDO4Remap(kPulley1, kOBJModeOfOperation);
+    TxPDO4Remap(kPulley2, kOBJModeOfOperation);
+
+    // change to PPM mode;
+    SetMotorMode(kPulley1, 0x01);
+    SetMotorMode(kPulley2, 0x01);
+
+    //move to destination
+    MoveRelative(kPulley1, kPulley2, robot_->pulleys_distance_factor * kPulleysDebugRelaPos);
 
     // disable the debug
     robot_->debug_en = 0;
+}
+
+void robot::PulleysHomingDebug(void)
+{
+    // disable pulleys
+    MotorDisable(kPulley1);
+    MotorDisable(kPulley2);
+
+    // change to CST mode
+    SetMotorMode(kPulley1, 0x0A);
+    SetMotorMode(kPulley2, 0x0A);
+
+    // remap TxPDO4 to target torque
+    TxPDO4Remap(kPulley1, kOBJTargetTorque);
+    TxPDO4Remap(kPulley2, kOBJTargetTorque);
+
+    // enable pulleys
+    MotorEnable(kPulley1);
+    MotorEnable(kPulley2);
+
+    // set homing torque
+    SetTargetTorque(kPulley1, robot_->pulleys_homing_torque);
 }
 
 // homing
@@ -229,6 +273,8 @@ void robot::DownClawHoldDebug(void)
         // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
 
+    // sleep(1);
+
     // set to 40% of target torque
     while (downclaw1_->TrqPV < 0.4 * kDownClawHoldTorque)
     {
@@ -236,7 +282,7 @@ void robot::DownClawHoldDebug(void)
         // usleep(kDownClawDelayUs);
         // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
-
+    // sleep(1);
     // set to 60% of target torque
     while (downclaw1_->TrqPV < 0.6 * kDownClawHoldTorque)
     {
@@ -244,7 +290,7 @@ void robot::DownClawHoldDebug(void)
         // usleep(kDownClawDelayUs);
         // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
-
+    // sleep(1);
     // set to 80% of target torque
     while (downclaw1_->TrqPV < 0.8 * kDownClawHoldTorque)
     {
@@ -252,20 +298,20 @@ void robot::DownClawHoldDebug(void)
         // usleep(kDownClawDelayUs);
         // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
-
+    // sleep(1);
     // set to 100% of target torque
     while (downclaw1_->TrqPV < kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
         // usleep(kDownClawDelayUs);
-        printf("torque: %f%\n", downclaw1_->TrqPV / 10);
+        // printf("torque: %f%\n", downclaw1_->TrqPV / 10);
     }
 
     // wait for loose cmd
     while (robot_->down_claw_debug_loose == 0)
     {
-        // delay 1ms
         usleep(1000);
+        SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
     }
 
     MotorDisable(kDownClaw1);

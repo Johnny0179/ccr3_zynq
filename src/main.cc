@@ -6,6 +6,7 @@
 // mutex
 // pthread_mutex_t xLock = PTHREAD_MUTEX_INITIALIZER;
 
+
 // extern variables
 extern USHORT usRegHoldingBuf[REG_HOLDING_NREGS];
 
@@ -81,8 +82,8 @@ int main()
     while (1)
     {
         ccr3.system();
-        // delay 10us
-        usleep(10);
+        // delay 1us
+        usleep(1);
     }
     return 0;
 }
@@ -126,8 +127,8 @@ void *CanRecvThread(void *arg)
 {
     while (1)
     {
-        // delay 100us
-        usleep(100);
+        // delay 10us
+        usleep(10);
         ccr3.CanDisPatch();
     }
 }

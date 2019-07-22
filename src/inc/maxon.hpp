@@ -99,7 +99,7 @@ public:
     can can0;
 
     // motors
-    maxon_type *upclaw_, *upwheel_, *downclaw1_;
+    maxon_type *upclaw_, *upwheel_, *downclaw1_,*pulley1_,*pulley2_;
 
     // delay_time wait for epos 50ms
     static const __u32 kDelayEpos = 50000;
@@ -131,6 +131,9 @@ public:
     static const __useconds_t kDownClawDelayUs = 500000;
     //loose distance
     static const __s32 kDownClawLooseDistance = -400000;
+
+    // pulleys debug parameters
+    static const __u32 kPulleysHomingTorque=10;
 
     /* -------------------------NMT functions------------------------------ */
     void NMTstart(void);
