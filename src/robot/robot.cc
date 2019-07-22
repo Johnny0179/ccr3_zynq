@@ -189,6 +189,9 @@ void robot::PulleysHomingDebug(void)
 
     // set homing torque
     SetTargetTorque(kPulley1, robot_->pulleys_homing_torque);
+
+    // disable the debug
+    robot_->debug_en = 0;
 }
 
 // homing
