@@ -123,12 +123,13 @@ public:
 
     /* -------------------debug parameters------------------------------------ */
     // down claw debug parameters
-    static const __u16 kDownClawInitialTorque = 400;//per thousand of “Motor rated torque
-
+    //initial torque, per thousand of “Motor rated torque
+    static const __u16 kDownClawInitialTorque = 600;
+    // hold torque
     static const __u16 kDownClawHoldTorque = 80;
 
     static const __useconds_t kDownClawDelayUs = 500000;
-
+    //loose distance
     static const __s32 kDownClawLooseDistance = -400000;
 
     /* -------------------------NMT functions------------------------------ */

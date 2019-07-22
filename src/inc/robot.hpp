@@ -29,7 +29,8 @@ struct robot_type
     // pulleys debug factor;
     __s16 pulleys_debug_factor;
 
-    // down claw 1 debug factor;
+    // down claw 1 debug;
+    __s16 down_claw_debug_loose;
 };
 
 class robot : public maxon

@@ -81,8 +81,8 @@ int main()
     while (1)
     {
         ccr3.system();
-        // delay 1us
-        usleep(1);
+        // delay 10us
+        usleep(10);
     }
     return 0;
 }
@@ -124,11 +124,10 @@ void *pvPollingThread(void *pvParameter)
 // can send thread function
 void *CanRecvThread(void *arg)
 {
-
     while (1)
     {
-        // delay 1us
-        usleep(1);
+        // delay 100us
+        usleep(100);
         ccr3.CanDisPatch();
     }
 }

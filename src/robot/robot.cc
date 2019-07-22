@@ -213,126 +213,74 @@ void robot::DownClawHoldDebug(void)
     // change to CST mode;
     SetMotorMode(kDownClaw1, 0x0A);
 
-    // enter pre operation state
-    NMTPreOperation(kDownClaw1);
-
-    // clear past RxPDO mapping
-    SdoWrU8(kDownClaw1, 0x1603, 0x00, 0);
-
-    // first mapped object in RxPDO4 is Target Torque
-    SdoWrU32(kDownClaw1, 0x1603, 0x01, 0x60710010);
-
-    // reset mapping object number, 1
-    SdoWrU8(kDownClaw1, 0x1603, 0x00, 1);
-
-    // restart node
-    NMTstart(kDownClaw1);
+    // remap TxPDO4 to target torque
+    TxPDO4Remap(kDownClaw1, kOBJTargetTorque);
 
     MotorEnable(kDownClaw1);
 
     // set initial target torque 30%
     SetTargetTorque(kDownClaw1, kDownClawInitialTorque);
 
-    // set to 20%
+    // set to 20% of target torque
     while (downclaw1_->TrqPV > 0.5 * kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, 0.2 * kDownClawHoldTorque);
         // usleep(kDownClawDelayUs);
-        printf("torque: %d%\n",downclaw1_->TrqPV/10);
+        // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
 
-    // set to 40%
+    // set to 40% of target torque
     while (downclaw1_->TrqPV < 0.4 * kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, 0.4 * kDownClawHoldTorque);
         // usleep(kDownClawDelayUs);
-        printf("torque: %d%\n",downclaw1_->TrqPV/10);
+        // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
 
-    // set to 60%
+    // set to 60% of target torque
     while (downclaw1_->TrqPV < 0.6 * kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, 0.6 * kDownClawHoldTorque);
         // usleep(kDownClawDelayUs);
-        printf("torque: %d%\n",downclaw1_->TrqPV/10);
+        // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
 
-    // set to 80%
+    // set to 80% of target torque
     while (downclaw1_->TrqPV < 0.8 * kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, 0.8 * kDownClawHoldTorque);
         // usleep(kDownClawDelayUs);
-        printf("torque: %d%\n",downclaw1_->TrqPV/10);
+        // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
 
-    // set to 100%
+    // set to 100% of target torque
     while (downclaw1_->TrqPV < kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
         // usleep(kDownClawDelayUs);
-        printf("torque: %d%\n",downclaw1_->TrqPV/10);
+        printf("torque: %f%\n", downclaw1_->TrqPV / 10);
     }
 
-    sleep(2);
-    MotorDisable(kDownClaw1);
+    // wait for loose cmd
+    while (robot_->down_claw_debug_loose == 0)
+    {
+        // delay 1ms
+        usleep(1000);
+    }
 
-    // remap
+    MotorDisable(kDownClaw1);
+    // remap TxPdo4 to mode of operation
     TxPDO4Remap(kDownClaw1, kOBJModeOfOperation);
 
     // change to PPM mode;
     SetMotorMode(kDownClaw1, 0x01);
 
+    // loose down claw
     MotorEnable(kDownClaw1);
     MoveRelative(kDownClaw1, kDownClawLooseDistance);
 
+    //clear debug parameters
+    robot_->down_claw_debug_loose = 0;
     // disable the debug
     robot_->debug_en = 0;
-
-    // ccr3.MotorDisable(1);
-    // ccr3.NMTstop(1);
-
-    // // state machine parameters
-    // static const __u8 kidle = 0;
-    // static const __u8 kPPM = 1;
-    // static const __u8 kCST = 2;
-    // static const __u8 kDebugDone = 3;
-
-    // // state machine variable
-    // static __u8 state = 0;
-
-    // while (state != kDebugDone)
-    // {
-    //     switch (state)
-    //     {
-    //     case kidle:
-    //         state = kPPM;
-    //         break;
-
-    //     case kPPM:
-    //         // target torque <3%
-    //         if (downclaw1_->TrqPV < 30)
-    //         {
-    //             // enable down claw 1
-    //             MotorEnable(kDownClaw1);
-    //             // increase 10000 inc
-    //             MoveRelative(kDownClaw1, 10000);
-    //             // disable down claw 1
-    //             MotorDisable(kDownClaw1);
-    //         }
-    //         else
-    //         {
-    //             // change to CST state
-    //             state = kCST;
-    //         }
-
-    //     case kCST:
-
-    //         break;
-
-    //         break;
-
-    //     default:
-    //         break;
-    //     }
-    // }
 }
