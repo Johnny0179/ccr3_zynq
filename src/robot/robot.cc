@@ -15,7 +15,7 @@ robot::robot(USHORT reg[]) : maxon()
     robot_->mode_select = 1;
 
     // defualt debug pulleys
-    robot_->debug_mode_select = 4;
+    robot_->debug_mode_select = 6;
 
     // defualt RxPDOmapping
 }
@@ -150,18 +150,6 @@ void robot::UpWheelDebug(void)
 // Pulleys Debug
 void robot::PulleysDebug(void)
 {
-    // disable pulleys
-    MotorDisable(kPulley1);
-    MotorDisable(kPulley2);
-
-    // remap TxPdo4 to mode of operation
-    TxPDO4Remap(kPulley1, kOBJModeOfOperation);
-    TxPDO4Remap(kPulley2, kOBJModeOfOperation);
-
-    // change to PPM mode;
-    SetMotorMode(kPulley1, 0x01);
-    SetMotorMode(kPulley2, 0x01);
-
     //move to destination
     MoveRelative(kPulley1, kPulley2, robot_->pulleys_distance_factor * kPulleysDebugRelaPos);
 
@@ -187,8 +175,26 @@ void robot::PulleysHomingDebug(void)
     MotorEnable(kPulley1);
     MotorEnable(kPulley2);
 
-    // set homing torque
-    SetTargetTorque(kPulley1, robot_->pulleys_homing_torque);
+    // wait for homing done
+    while (robot_->pulleys_homing_done == 0)
+    {
+        usleep(1000);
+        // set homing torque
+        SetTargetTorque(kPulley1, robot_->pulleys_homing_torque * 10);
+    }
+
+    // change to PPM mode
+    // disable pulleys
+    MotorDisable(kPulley1);
+    MotorDisable(kPulley2);
+
+    // remap TxPdo4 to mode of operation
+    TxPDO4Remap(kPulley1, kOBJModeOfOperation);
+    TxPDO4Remap(kPulley2, kOBJModeOfOperation);
+
+    // change to PPM mode;
+    SetMotorMode(kPulley1, 0x01);
+    SetMotorMode(kPulley2, 0x01);
 
     // disable the debug
     robot_->debug_en = 0;
@@ -242,18 +248,6 @@ __u16 robot::Homing(maxon_type *motor)
 // down claw debug
 void robot::DownClawHoldDebug(void)
 {
-    // // enable down claw 1
-    // MotorEnable(kDownClaw1);
-
-    // // increase 10000 inc
-    // MoveRelative(kDownClaw1, 500000);
-
-    // // wiat torque >20%
-    // while (abs(downclaw1_->TrqPV) < 200)
-    // {
-    //     printf("torque: %d%\n",abs(downclaw1_->TrqPV/10));
-    // }
-
     // disable down claw 1
     MotorDisable(kDownClaw1);
 
@@ -332,4 +326,47 @@ void robot::DownClawHoldDebug(void)
     robot_->down_claw_debug_loose = 0;
     // disable the debug
     robot_->debug_en = 0;
+}
+
+// up claw hold debug
+void robot::UpClawHoldDebug(void)
+{
+    // disable up claw
+    MotorDisable(kUpClaw);
+
+    // change to CST mode;
+    SetMotorMode(kUpClaw, 0x0A);
+
+    // remap TxPDO4 to target torque
+    TxPDO4Remap(kUpClaw, kOBJTargetTorque);
+
+    MotorEnable(kUpClaw);
+
+    // set initial target torque 60%
+    SetTargetTorque(kUpClaw, kUpClawInitialTorque);
+
+    // set to 50% of target torque
+    while (upclaw_->TrqPV > 0.5 * kUpClawHoldTorque)
+    {
+        SetTargetTorque(kUpClaw, 0.5 * kUpClawHoldTorque);
+    }
+
+    // set to 80% of target torque
+    while (upclaw_->TrqPV < 0.8 * kUpClawHoldTorque)
+    {
+        SetTargetTorque(kUpClaw, 0.8 * kUpClawHoldTorque);
+    }
+
+    // set to 100% of target torque
+    while (upclaw_->TrqPV < 1 * kUpClawHoldTorque)
+    {
+        SetTargetTorque(kUpClaw, 1 * kUpClawHoldTorque);
+    }
+
+    // wait for loose cmd
+    while (robot_->up_claw_debug_loose == 0)
+    {
+        usleep(1000);
+        SetTargetTorque(kUpClaw, kUpClawHoldTorque);
+    }
 }

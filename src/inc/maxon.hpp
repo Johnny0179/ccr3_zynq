@@ -99,7 +99,7 @@ public:
     can can0;
 
     // motors
-    maxon_type *upclaw_, *upwheel_, *downclaw1_,*pulley1_,*pulley2_;
+    maxon_type *upclaw_, *upwheel_, *downclaw1_, *pulley1_, *pulley2_;
 
     // delay_time wait for epos 50ms
     static const __u32 kDelayEpos = 50000;
@@ -122,18 +122,25 @@ public:
     static const __u32 kOBJTargetTorque = 0x60710010;
 
     /* -------------------debug parameters------------------------------------ */
+    //up claw debug parameters
+    //initial torque, per thousand of “Motor rated torque
+    static const __u16 kUpClawInitialTorque = 600;
+
+    // hold torque, -47%
+    static const __u16 kUpClawHoldTorque = -470;
+
     // down claw debug parameters
     //initial torque, per thousand of “Motor rated torque
-    static const __u16 kDownClawInitialTorque = 600;
-    // hold torque
-    static const __u16 kDownClawHoldTorque = 80;
+    static const __u16 kDownClawInitialTorque = 300;
+    // hold torque, 40%
+    static const __u16 kDownClawHoldTorque = 400;
 
     static const __useconds_t kDownClawDelayUs = 500000;
     //loose distance
-    static const __s32 kDownClawLooseDistance = -400000;
+    static const __s32 kDownClawLooseDistance = -300000;
 
     // pulleys debug parameters
-    static const __u32 kPulleysHomingTorque=10;
+    static const __u32 kPulleysHomingTorque = 10;
 
     /* -------------------------NMT functions------------------------------ */
     void NMTstart(void);

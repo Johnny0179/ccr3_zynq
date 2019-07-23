@@ -14,14 +14,14 @@ struct robot_type
     // debug mode select
     __u16 debug_mode_select;
 
-    // debug_done
-    __u16 debug_done;
-
     // debug enable?
     __u16 debug_en;
 
     // claw debug factor
     __s16 upclaw_debug_factor;
+
+    // up claw loose
+    __s16 up_claw_debug_loose;
 
     // upwheel debug factor
     __s16 upwheel_debug_factor;
@@ -31,6 +31,9 @@ struct robot_type
 
     // pulleys homing torque
     __s16 pulleys_homing_torque;
+
+    // pulleys homing done
+    __s16 pulleys_homing_done;
 
     // down claw 1 debug;
     __s16 down_claw_debug_loose;
@@ -68,7 +71,7 @@ private:
     // up claw hold motion
     static const __u16 kDownClawHoldDebug = 6;
 
-    // 
+    //
 
     /* debug state machine */
 
@@ -99,6 +102,7 @@ public:
 
     /* -------------------------debug function------------------------------ */
     void UpClawDebug(void);
+    void UpClawHoldDebug(void);
     void UpWheelDebug(void);
     void PulleysDebug(void);
     void PulleysHomingDebug(void);
