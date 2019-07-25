@@ -122,7 +122,7 @@ void *pvPollingThread(void *pvParameter)
     return 0;
 }
 
-// can send thread function
+// can receive thread function
 void *CanRecvThread(void *arg)
 {
     while (1)

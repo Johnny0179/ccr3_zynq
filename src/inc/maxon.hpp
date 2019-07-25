@@ -208,4 +208,7 @@ public:
 
     void MotorParaRead(__u16 cob_id, maxon_type *motor, can_frame *recv_frame);
     void CanDisPatch(void);
+
+    // time delay
+    void delay_us(__u32 us);
 };

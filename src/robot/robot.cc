@@ -63,7 +63,7 @@ void robot::system(void)
             // start NMT
             NMTstart(0);
             // wait epos
-            usleep(kDelayEpos);
+            delay_us(kDelayEpos);
 
             // choose debug mode
             switch (robot_->debug_mode_select)
@@ -174,16 +174,16 @@ void robot::PulleysHomingDebug(void)
 
     // enable pulleys
     MotorEnable(kPulley1);
-    usleep(50000);
+    delay_us(50000);
     MotorEnable(kPulley2);
 
     // wait for homing done
     while (robot_->pulleys_homing_done == 0)
     {
-        usleep(50000);
+        delay_us(50000);
         // set homing torque
         SetTargetTorque(kPulley1, robot_->pulleys_homing_torque * 10);
-        usleep(50000);
+        delay_us(50000);
         // SetTargetTorque(kPulley2, robot_->pulleys_homing_torque * 10);
         printf("pulleys homing torq: pulley1->%d, pulley2->%d\n", pulley1_->TrqPV, pulley2_->TrqPV);
     }
@@ -271,7 +271,7 @@ void robot::DownClawHoldDebug(void)
     while (downclaw1_->TrqPV > 0.5 * kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, 0.2 * kDownClawHoldTorque);
-        // usleep(kDownClawDelayUs);
+        // delay_us(kDownClawDelayUs);
         // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
 
@@ -281,7 +281,7 @@ void robot::DownClawHoldDebug(void)
     while (downclaw1_->TrqPV < 0.4 * kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, 0.4 * kDownClawHoldTorque);
-        // usleep(kDownClawDelayUs);
+        // delay_us(kDownClawDelayUs);
         // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
     // sleep(1);
@@ -289,7 +289,7 @@ void robot::DownClawHoldDebug(void)
     while (downclaw1_->TrqPV < 0.6 * kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, 0.6 * kDownClawHoldTorque);
-        // usleep(kDownClawDelayUs);
+        // delay_us(kDownClawDelayUs);
         // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
     // sleep(1);
@@ -297,7 +297,7 @@ void robot::DownClawHoldDebug(void)
     while (downclaw1_->TrqPV < 0.8 * kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, 0.8 * kDownClawHoldTorque);
-        // usleep(kDownClawDelayUs);
+        // delay_us(kDownClawDelayUs);
         // printf("torque: %d%\n", downclaw1_->TrqPV / 10);
     }
     // sleep(1);
@@ -305,14 +305,14 @@ void robot::DownClawHoldDebug(void)
     while (downclaw1_->TrqPV < kDownClawHoldTorque)
     {
         SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
-        // usleep(kDownClawDelayUs);
+        // delay_us(kDownClawDelayUs);
         // printf("torque: %f%\n", downclaw1_->TrqPV / 10);
     }
 
     // wait for loose cmd
     while (robot_->down_claw_debug_loose == 0)
     {
-        usleep(1000);
+        delay_us(1000);
         SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
     }
 
@@ -371,7 +371,7 @@ void robot::UpClawHoldDebug(void)
     // wait for loose cmd
     while (robot_->up_claw_debug_loose == 0)
     {
-        usleep(1000);
+        delay_us(1000);
         SetTargetTorque(kUpClaw, kUpClawHoldTorque);
         printf("upclaw hold torq: %d\n",upclaw_->TrqPV);
     }

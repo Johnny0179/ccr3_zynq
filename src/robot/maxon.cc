@@ -10,7 +10,7 @@ maxon::~maxon()
 /* -------------------------------NMT control------------------------------------ */
 void maxon::NMTstart(void)
 {
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     can_frame nmt_frame;
     // nmt frame init
     nmt_frame.can_id = kNMT;
@@ -29,7 +29,7 @@ void maxon::NMTstart(void)
 
 void maxon::NMTstart(__u8 slave_id)
 {
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     can_frame nmt_frame;
     // nmt frame init
     nmt_frame.can_id = kNMT;
@@ -55,7 +55,7 @@ void maxon::NMTstart(__u8 slave_id)
 
 void maxon::NMTPreOperation(__u8 slave_id)
 {
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     can_frame nmt_frame;
     // nmt frame init
     nmt_frame.can_id = kNMT;
@@ -194,7 +194,7 @@ ssize_t maxon::TxPdo4CST(__u8 slave_id, __u16 target_torque)
 // sdo write 8bit
 ssize_t maxon::SdoWrU8(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 {
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     can_frame sdo_rx_frame;
     sdo_rx_frame.can_id = kSDOrx + slave_id;
     sdo_rx_frame.can_dlc = 8;
@@ -213,7 +213,7 @@ ssize_t maxon::SdoWrU8(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 // sdo write 16bit
 ssize_t maxon::SdoWrU16(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 {
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     can_frame sdo_rx_frame;
     sdo_rx_frame.can_id = kSDOrx + slave_id;
     sdo_rx_frame.can_dlc = 8;
@@ -232,7 +232,7 @@ ssize_t maxon::SdoWrU16(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 // sdo write 32bit
 ssize_t maxon::SdoWrU32(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 {
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     can_frame sdo_rx_frame;
     sdo_rx_frame.can_id = kSDOrx + slave_id;
     sdo_rx_frame.can_dlc = 8;
@@ -252,7 +252,7 @@ ssize_t maxon::SdoWrU32(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 
 ssize_t maxon::SetCtrlWrd(__u8 slave_id, __u16 ctrl_wrd)
 {
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     return TxPdo1(slave_id, ctrl_wrd);
 }
 
@@ -271,13 +271,13 @@ void maxon::MotorDisable(__u8 slave_id)
 
 ssize_t maxon::SetMotorAbsPos(__u8 slave_id, __s32 abs_pos)
 {
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     return TxPdo2(slave_id, kServAbsPosSet, abs_pos);
 }
 
 ssize_t maxon::SetMotorRelPos(__u8 slave_id, __s32 relative_pos)
 { // wait epos
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     return TxPdo2(slave_id, kServRelPosSet, relative_pos);
 }
 
@@ -288,7 +288,7 @@ ssize_t maxon::SetMotorSpeed(__u8 slave_id, __s32 speed_set)
 
 ssize_t maxon::SetTargetTorque(__u8 slave_id, __s16 target_torque)
 {
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     return TxPdo4CST(slave_id, target_torque);
 }
 
@@ -304,7 +304,7 @@ ssize_t maxon::SetMotorMode(__u8 slave_id, __u16 operation_mode)
     // // restart node
     // NMTstart(slave_id);
 
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     return TxPdo4(slave_id, operation_mode);
 }
 // read the can frame
@@ -448,9 +448,9 @@ void maxon::MoveRelative(__u8 slave_id1, __u8 slave_id2, __s32 relative_pos)
 void maxon::MoveAbsolute(__u8 slave_id, __s32 absolute_pos)
 {
     // wait epos
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     SetMotorRelPos(slave_id, absolute_pos);
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     SetCtrlWrd(slave_id, 0x000F);
 }
 
@@ -458,6 +458,12 @@ void maxon::MoveAbsolute(__u8 slave_id, __s32 absolute_pos)
 void maxon::MotorQuickStop(__u8 slave_id)
 {
     // wait epos
-    usleep(kDelayEpos);
+    delay_us(kDelayEpos);
     SetCtrlWrd(slave_id, 0x000B);
+}
+
+// delay_us
+void maxon::delay_us(__u32 us)
+{
+    usleep(us);
 }
