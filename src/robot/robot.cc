@@ -14,8 +14,8 @@ robot::robot(USHORT reg[]) : maxon()
     // defualt debug mode
     robot_->mode_select = 1;
 
-    // defualt debug pulleys
-    robot_->debug_mode_select = 6;
+    // defualt debug mode
+    robot_->debug_mode_select = 3;
 
     // defualt RxPDOmapping
 }
@@ -80,8 +80,9 @@ void robot::system(void)
                 UpWheelDebug();
                 break;
 
-            case kUpClawMotionDebug:
-                Homing(upclaw_);
+            case kUpClawHoldDebug:
+                printf("Up Claw hold debug!\n");
+                UpClawHoldDebug();
                 break;
 
             case kPulleysMotionDebug:
@@ -173,14 +174,18 @@ void robot::PulleysHomingDebug(void)
 
     // enable pulleys
     MotorEnable(kPulley1);
+    usleep(50000);
     MotorEnable(kPulley2);
 
     // wait for homing done
     while (robot_->pulleys_homing_done == 0)
     {
-        usleep(1000);
+        usleep(50000);
         // set homing torque
         SetTargetTorque(kPulley1, robot_->pulleys_homing_torque * 10);
+        usleep(50000);
+        // SetTargetTorque(kPulley2, robot_->pulleys_homing_torque * 10);
+        printf("pulleys homing torq: pulley1->%d, pulley2->%d\n", pulley1_->TrqPV, pulley2_->TrqPV);
     }
 
     // change to PPM mode
@@ -368,5 +373,22 @@ void robot::UpClawHoldDebug(void)
     {
         usleep(1000);
         SetTargetTorque(kUpClaw, kUpClawHoldTorque);
+        printf("upclaw hold torq: %d\n",upclaw_->TrqPV);
     }
+
+    MotorDisable(kUpClaw);
+    // remap TxPdo4 to mode of operation
+    TxPDO4Remap(kUpClaw, kOBJModeOfOperation);
+
+    // change to PPM mode;
+    SetMotorMode(kUpClaw, 0x01);
+
+    // loose down claw
+    MotorEnable(kUpClaw);
+    MoveRelative(kUpClaw, kUpClawLooseDistance);
+
+    //clear debug parameters
+    robot_->up_claw_debug_loose = 0;
+    // disable the debug
+    robot_->debug_en = 0;
 }

@@ -105,7 +105,7 @@ public:
     static const __u32 kDelayEpos = 50000;
     /* variable */
     // Motor number
-    static const __u8 kMotorNum = 2;
+    static const __u8 kMotorNum = 6;
 
     /* Motor node id List */
     static const __u8 kUpClaw = 1;
@@ -122,14 +122,17 @@ public:
     static const __u32 kOBJTargetTorque = 0x60710010;
 
     /* -------------------debug parameters------------------------------------ */
-    //up claw debug parameters
+    /* upclaw debug parameters */
     //initial torque, per thousand of “Motor rated torque
-    static const __u16 kUpClawInitialTorque = 600;
+    static const __s16 kUpClawInitialTorque = -600;
 
-    // hold torque, -47%
-    static const __u16 kUpClawHoldTorque = -470;
+    // upclaw hold torque, -47%
+    static const __s16 kUpClawHoldTorque = -470;
 
-    // down claw debug parameters
+    //upclaw loose distance
+    static const __s32 kUpClawLooseDistance = 400000;
+
+    /* downclaw debug parameters */
     //initial torque, per thousand of “Motor rated torque
     static const __u16 kDownClawInitialTorque = 300;
     // hold torque, 40%
@@ -198,7 +201,7 @@ public:
     void MoveAbsolute(__u8 slave_id, __s32 absolute_pos);
 
     // set target torque
-    ssize_t SetTargetTorque(__u8 slave_id, __u16 target_torque);
+    ssize_t SetTargetTorque(__u8 slave_id, __s16 target_torque);
 
     maxon(void);
     ~maxon();

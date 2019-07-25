@@ -56,11 +56,11 @@ private:
     // claw motor debug
     static const __u16 kUpClawMotorDebug = 1;
 
-    // claw motor debug
+    // upwheel motor debug
     static const __u16 kUpWheelMotorDebug = 2;
 
-    // claw homing debug
-    static const __u16 kUpClawMotionDebug = 3;
+    // claw hold debug
+    static const __u16 kUpClawHoldDebug = 3;
 
     // pulley motion debug
     static const __u16 kPulleysMotionDebug = 4;

@@ -286,7 +286,7 @@ ssize_t maxon::SetMotorSpeed(__u8 slave_id, __s32 speed_set)
     return TxPdo3(slave_id, speed_set);
 }
 
-ssize_t maxon::SetTargetTorque(__u8 slave_id, __u16 target_torque)
+ssize_t maxon::SetTargetTorque(__u8 slave_id, __s16 target_torque)
 {
     usleep(kDelayEpos);
     return TxPdo4CST(slave_id, target_torque);
