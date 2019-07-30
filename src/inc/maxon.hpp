@@ -25,7 +25,7 @@ struct maxon_type
 
     /* ------------------put new variables blow this line---------------- */
     // mode of operation select
-    __u16 mode_of_opreation;
+    __u16 motion_state;
     // Torque offset
     __u16 torque_offset;
     // target torque
@@ -106,6 +106,10 @@ public:
     /* variable */
     // Motor number
     static const __u8 kMotorNum = 6;
+
+    // motor motion state
+    static const __u8 kHold=1;
+    static const __u8 kLoose=2;
 
     /* Motor node id List */
     static const __u8 kUpClaw = 1;

@@ -71,7 +71,8 @@ private:
     // up claw hold motion
     static const __u16 kDownClawHoldDebug = 6;
 
-    //
+    // homing motion debug
+    static const __u16 kHomingDebug = 7;
 
     /* debug state machine */
 
