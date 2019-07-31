@@ -110,8 +110,7 @@ void maxon::TxPDO4Remap(__u8 slave_id, __u32 object_value)
     // reset mapping object number, 1
     SdoWrU8(slave_id, 0x1603, 0x00, 1);
 
-    // restart node
-    NMTstart(slave_id);
+    // sleep(1);
 }
 
 // TxPDO1
@@ -466,4 +465,76 @@ void maxon::MotorQuickStop(__u8 slave_id)
 void maxon::delay_us(__u32 us)
 {
     usleep(us);
+}
+
+// 2 motor
+void maxon::ChangeToTorqueMode(__u8 slave_id1, __u8 slave_id2)
+{
+    // disable pulleys
+    MotorDisable(slave_id1);
+    MotorDisable(slave_id2);
+
+    // change to CST mode
+    SetMotorMode(slave_id1, 0x0A);
+    SetMotorMode(slave_id2, 0x0A);
+
+    // remap pulley1 TxPDO4 to target torque
+    TxPDO4Remap(slave_id2, kOBJTargetTorque);
+    TxPDO4Remap(slave_id1, kOBJTargetTorque);
+
+    // node enter normal mode
+    NMTstart(slave_id1);
+    NMTstart(slave_id2);
+}
+
+// one motor
+void maxon::ChangeToTorqueMode(__u8 slave_id)
+{
+    // disable pulleys
+    MotorDisable(slave_id);
+
+    // change to CST mode
+    SetMotorMode(slave_id, 0x0A);
+
+    // remap TxPDO4 to target torque
+    TxPDO4Remap(slave_id, kOBJTargetTorque);
+
+    // node enter normal mode
+    NMTstart(slave_id);
+}
+
+// one motor
+void maxon::ChangeToPositionMode(__u8 slave_id)
+{
+    // disable motor
+    MotorDisable(slave_id);
+
+    // remap TxPdo4 to mode of operation
+    TxPDO4Remap(slave_id, kOBJModeOfOperation);
+
+    // restart node
+    NMTstart(slave_id);
+
+    // change to PPM mode;
+    SetMotorMode(slave_id, 0x01);
+}
+
+// two motor
+void maxon::ChangeToPositionMode(__u8 slave_id1,__u8 slave_id2)
+{
+    // disable motor
+    MotorDisable(slave_id1);
+    MotorDisable(slave_id2);
+
+    // remap TxPdo4 to mode of operation
+    TxPDO4Remap(slave_id1, kOBJModeOfOperation);
+    TxPDO4Remap(slave_id2, kOBJModeOfOperation);
+
+    // restart node
+    NMTstart(slave_id1);
+    NMTstart(slave_id2);
+
+    // change to PPM mode;
+    SetMotorMode(slave_id1, 0x01);
+    SetMotorMode(slave_id2, 0x01);
 }

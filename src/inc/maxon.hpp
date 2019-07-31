@@ -108,8 +108,8 @@ public:
     static const __u8 kMotorNum = 6;
 
     // motor motion state
-    static const __u8 kHold=1;
-    static const __u8 kLoose=2;
+    static const __u8 kHold = 1;
+    static const __u8 kLoose = 2;
 
     /* Motor node id List */
     static const __u8 kUpClaw = 1;
@@ -196,6 +196,14 @@ public:
     void MotorDisable(__u8 slave_id);
     // quick stop motor
     void MotorQuickStop(__u8 slave_id);
+
+    // change to torque mode
+    void ChangeToTorqueMode(__u8 slave_id1,__u8 slave_id2);
+    void ChangeToTorqueMode(__u8 slave_id);
+
+    // change to PPM
+    void ChangeToPositionMode(__u8 slave_id);
+    void ChangeToPositionMode(__u8 slave_id1,__u8 slave_id2);
 
     // move to relative position
     void MoveRelative(__u8 slave_id, __s32 relative_pos);

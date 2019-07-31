@@ -32,11 +32,17 @@ struct robot_type
     // pulleys homing torque
     __s16 pulleys_homing_torque;
 
+    // pulley 1 torque
+    __s16 pulley1_torque;
+    __s16 pulley2_torque;
+
     // pulleys homing done
-    __s16 pulleys_homing_done;
+    __u16 pulleys_homing_done;
 
     // down claw 1 debug;
     __s16 down_claw_debug_loose;
+    // up_claw_debug done
+    __u16 up_claw_hold_done;
 };
 
 class robot : public maxon
