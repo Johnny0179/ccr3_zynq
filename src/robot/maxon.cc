@@ -96,6 +96,18 @@ void maxon::NMTstop(__u8 slave_id)
         printf("CAN communication error!\n");
     }
 }
+
+// cmd sync
+void maxon::CmdSync()
+{
+    can_frame nmt_frame;
+    // nmt frame init
+    nmt_frame.can_id = kSYNC;
+    nmt_frame.can_dlc = 0;
+
+    can0.send(&nmt_frame);
+}
+
 /* -------------------TxPDO mapping------------------ */
 // TxPDO4 mapping
 void maxon::TxPDO4Remap(__u8 slave_id, __u32 object_value)
@@ -294,18 +306,10 @@ ssize_t maxon::SetTargetTorque(__u8 slave_id, __s16 target_torque)
 // set motor operation mode
 ssize_t maxon::SetMotorMode(__u8 slave_id, __u16 operation_mode)
 {
-    // // enter pre operation state
-    // NMTPreOperation(slave_id);
-
-    // // set modes of operation
-    // SdoWrU16(slave_id, 0x6060, 0x00, operation_mode);
-
-    // // restart node
-    // NMTstart(slave_id);
-
     delay_us(kDelayEpos);
     return TxPdo4(slave_id, operation_mode);
 }
+
 // read the can frame
 void maxon::CanDisPatch(void)
 {
@@ -468,23 +472,36 @@ void maxon::delay_us(__u32 us)
 }
 
 // 2 motor
-void maxon::ChangeToTorqueMode(__u8 slave_id1, __u8 slave_id2)
+__s8 maxon::ChangeToTorqueMode(const maxon_type *motor1, const maxon_type *motor2)
 {
     // disable pulleys
-    MotorDisable(slave_id1);
-    MotorDisable(slave_id2);
+    MotorDisable(motor1->motor_id);
+    MotorDisable(motor2->motor_id);
+
+    // sleep(1);
 
     // change to CST mode
-    SetMotorMode(slave_id1, 0x0A);
-    SetMotorMode(slave_id2, 0x0A);
+    SetMotorMode(motor1->motor_id, 0x0A);
+    SetMotorMode(motor2->motor_id, 0x0A);
+
+    // sleep(1);
 
     // remap pulley1 TxPDO4 to target torque
-    TxPDO4Remap(slave_id2, kOBJTargetTorque);
-    TxPDO4Remap(slave_id1, kOBJTargetTorque);
+    TxPDO4Remap(motor2->motor_id, kOBJTargetTorque);
+    TxPDO4Remap(motor1->motor_id, kOBJTargetTorque);
 
     // node enter normal mode
-    NMTstart(slave_id1);
-    NMTstart(slave_id2);
+    NMTstart(motor1->motor_id);
+    NMTstart(motor2->motor_id);
+
+    if (motor1->mode_display == 0x0A && motor2->mode_display == 0x0A)
+    {
+        return kCfgSuccess;
+    }
+    else
+    {
+        return kCfgFail;
+    }
 }
 
 // one motor
@@ -520,7 +537,7 @@ void maxon::ChangeToPositionMode(__u8 slave_id)
 }
 
 // two motor
-void maxon::ChangeToPositionMode(__u8 slave_id1,__u8 slave_id2)
+void maxon::ChangeToPositionMode(__u8 slave_id1, __u8 slave_id2)
 {
     // disable motor
     MotorDisable(slave_id1);
@@ -537,4 +554,28 @@ void maxon::ChangeToPositionMode(__u8 slave_id1,__u8 slave_id2)
     // change to PPM mode;
     SetMotorMode(slave_id1, 0x01);
     SetMotorMode(slave_id2, 0x01);
+}
+
+// pos error calculation
+__u32 maxon::PosErrorCalc(__s32 init_pos, __s32 current_pos, __s32 target_pos)
+{
+
+    // if they have the same sign
+    if (init_pos * current_pos > 0)
+    {
+        return abs(current_pos - init_pos - target_pos);
+    }
+    else
+    {
+        // different sign
+        if (init_pos > 0 && current_pos < 0)
+        {
+            return abs(0);
+        }
+
+        if (init_pos < 0 && current_pos > 0)
+        {
+            /* code */
+        }
+    }
 }

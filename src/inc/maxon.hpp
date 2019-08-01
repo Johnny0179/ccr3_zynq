@@ -101,8 +101,8 @@ public:
     // motors
     maxon_type *upclaw_, *upwheel_, *downclaw1_, *pulley1_, *pulley2_;
 
-    // delay_time wait for epos 50ms
-    static const __u32 kDelayEpos = 50000;
+    // delay_time wait for epos 100ms
+    static const __u32 kDelayEpos = 100000;
     /* variable */
     // Motor number
     static const __u8 kMotorNum = 6;
@@ -110,6 +110,8 @@ public:
     // motor motion state
     static const __u8 kHold = 1;
     static const __u8 kLoose = 2;
+    static const __u8 kTighten = 3;
+    static const __u8 kPulling = 4;
 
     /* Motor node id List */
     static const __u8 kUpClaw = 1;
@@ -149,11 +151,15 @@ public:
     // pulleys debug parameters
     static const __u32 kPulleysHomingTorque = 10;
 
+    /* -------------------------Config parameters-------------------------- */
+    static const __s8 kCfgSuccess = 0;
+    static const __s8 kCfgFail = -1;
     /* -------------------------NMT functions------------------------------ */
     void NMTstart(void);
     void NMTstart(__u8 slave_id);
     void NMTPreOperation(__u8 slave_id);
     void NMTstop(__u8 slave_id);
+    void CmdSync();
 
     /* TxPDO mapping */
     void TxPDO4Remap(__u8 slave_id, __u32 object_value);
@@ -198,12 +204,12 @@ public:
     void MotorQuickStop(__u8 slave_id);
 
     // change to torque mode
-    void ChangeToTorqueMode(__u8 slave_id1,__u8 slave_id2);
+    __s8 ChangeToTorqueMode(const maxon_type *motor1, const maxon_type *motor2);
     void ChangeToTorqueMode(__u8 slave_id);
 
     // change to PPM
     void ChangeToPositionMode(__u8 slave_id);
-    void ChangeToPositionMode(__u8 slave_id1,__u8 slave_id2);
+    void ChangeToPositionMode(__u8 slave_id1, __u8 slave_id2);
 
     // move to relative position
     void MoveRelative(__u8 slave_id, __s32 relative_pos);
@@ -211,6 +217,8 @@ public:
     void MoveRelative(__u8 slave_id1, __u8 slave_id2, __s32 relative_pos);
     // move to absolute position
     void MoveAbsolute(__u8 slave_id, __s32 absolute_pos);
+    // void pos error check
+    __u32 PosErrorCalc(__s32 init_pos, __s32 current_pos, __s32 target_pos);
 
     // set target torque
     ssize_t SetTargetTorque(__u8 slave_id, __s16 target_torque);

@@ -43,6 +43,9 @@ struct robot_type
     __s16 down_claw_debug_loose;
     // up_claw_debug done
     __u16 up_claw_hold_done;
+
+    /* ------------------move up motion debug-------------------------- */
+    __u16 down_claw_loose_en;
 };
 
 class robot : public maxon
@@ -80,6 +83,9 @@ private:
     // homing motion debug
     static const __u16 kHomingDebug = 7;
 
+    // master move up motion debug
+    static const __u16 kMasterMoveUp = 8;
+
     /* debug state machine */
 
     /* -------------------------robot motions------------------------------ */
@@ -88,6 +94,16 @@ private:
     static const __u8 kHomingIdle = 0;
     static const __u8 kHoming = 1;
     static const __u8 kHomingDone = 2;
+
+    // robot parameters
+    // tighten torque 10%
+    static const __s16 kPulleysTightenTorque = 100;
+
+    // pull torque 47%
+    static const __s16 kPulleysPullTorque = 470;
+
+    // pulleys move up distance
+    static const __s32 kPulleysMoveUpDistance = 20000;
 
     /* -------------------------debug parameters------------------------------------ */
     // claw relative pos 100 inc
@@ -106,7 +122,12 @@ public:
     void system(void);
 
     /* -------------------------robot control------------------------------ */
+    void MasterMoveUp();
 
+    void DownClawHold();
+    void DownClawLoose();
+    void PulleysTighten();
+    void PulleysMoveUp();
     /* -------------------------debug function------------------------------ */
     void UpClawDebug(void);
     void UpClawHoldDebug(void);
