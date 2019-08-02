@@ -101,8 +101,8 @@ public:
     // motors
     maxon_type *upclaw_, *upwheel_, *downclaw1_, *pulley1_, *pulley2_;
 
-    // delay_time wait for epos 100ms
-    static const __u32 kDelayEpos = 100000;
+    // delay_time wait for epos 50ms
+    static const __u32 kDelayEpos = 50000;
     /* variable */
     // Motor number
     static const __u8 kMotorNum = 6;
@@ -112,6 +112,7 @@ public:
     static const __u8 kLoose = 2;
     static const __u8 kTighten = 3;
     static const __u8 kPulling = 4;
+    static const __u8 kStop = 5;
 
     /* Motor node id List */
     static const __u8 kUpClaw = 1;

@@ -17,7 +17,8 @@ set(CMAKE_CXX_COMPILER "arm-linux-gnueabihf-g++")
 
 # compiler: language specific flags
 set(CMAKE_C_FLAGS "-Wall -O0 ")
-set(CMAKE_CXX_FLAGS "-Wall -O3 -g3 ")
+# support c++11
+set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -O3 -g3 ")
 
 # find additional toolchain executables
 # find_program(ARM_SIZE_EXECUTABLE "arm-linux-gnueabihf-size")

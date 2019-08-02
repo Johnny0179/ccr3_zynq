@@ -110,6 +110,11 @@ void robot::system(void)
                 printf("Master Move up debug!\n");
                 break;
 
+            case kMasterMoveDown:
+                MasterMoveDown();
+                printf("Master Move Down debug!\n");
+                break;
+
             default:
                 break;
             }
@@ -525,10 +530,55 @@ void robot::PulleysTighten()
     pulley2_->motion_state = kTighten;
 }
 
+/* --------------pulleys move up threads----------------- */
+void robot::Pulley1MoveUpThread()
+{
+    __s32 init_pos1;
+    // save inint pos
+    init_pos1 = pulley1_->PosPV;
+    printf("pulley1 move up thread!\n");
+    // wait pulleys reach the target pos, 100 inc error
+    while (pulley1_->PosPV < (init_pos1 + kPulleysMoveUpDistance))
+    {
+        // delay 10us
+        // delay_us(10);
+        printf("cunrrent pos1:%d\n", pulley1_->PosPV);
+        printf("target pos1:%d\n", (init_pos1 + kPulleysMoveUpDistance));
+    }
+
+    printf("cunrrent pos1:%d\n", pulley1_->PosPV);
+    // change to PPM
+    ChangeToPositionMode(kPulley1);
+
+    // enable motor
+    MotorEnable(kPulley1);
+}
+
+//
+void robot::Pulley2MoveUpThread()
+{
+    __s32 init_pos2;
+    init_pos2 = pulley2_->PosPV;
+    printf("pulley2 move up thread!\n");
+    while (pulley2_->PosPV < (init_pos2 + kPulleysMoveUpDistance))
+    {
+        // // delay 10us
+        delay_us(10);
+        printf("cunrrent pos2:%d\n", pulley2_->PosPV);
+        printf("target pos2:%d\n", (init_pos2 + kPulleysMoveUpDistance));
+    }
+
+    printf("cunrrent pos2:%d\n", pulley2_->PosPV);
+    // change to PPM
+    ChangeToPositionMode(kPulley2);
+
+    // enable motor
+    MotorEnable(kPulley2);
+}
+
 // Pulleys move up
 void robot::PulleysMoveUp()
 {
-    __s32 init_pos1, init_pos2;
 
     // set pulling torque
     SetTargetTorque(kPulley1, kPulleysPullTorque);
@@ -537,40 +587,32 @@ void robot::PulleysMoveUp()
     // wait the toruqe reach the target, 1% error
     while (abs(pulley1_->TrqPV - kPulleysPullTorque) > 10 && abs(pulley2_->TrqPV - kPulleysPullTorque) > 10)
     {
-
         // delay 1ms
         delay_us(1000);
         printf("pulley1 torque:%d\n", pulley1_->TrqPV);
     }
 
-    // save inint pos
-    init_pos1 = pulley1_->PosPV;
-    init_pos2 = pulley2_->PosPV;
-
     // change pulleys state to pulling
     pulley1_->motion_state = kPulling;
     pulley2_->motion_state = kPulling;
 
-    // wait pulleys reach the target pos, 100 inc error
-    while ((abs(abs(init_pos1 - pulley1_->PosPV) - abs(kPulleysMoveUpDistance)) > 100) || (abs(abs(init_pos2 - pulley2_->PosPV) - abs(kPulleysMoveUpDistance)) > 100))
+    // two pulleys move up thread, this pointer!!!
+    thread pulley1_moveup_thread(&robot::Pulley1MoveUpThread, this);
+    thread pulley2_moveup_thread(&robot::Pulley2MoveUpThread, this);
+
+    // wait distance reached
+    pulley1_moveup_thread.join();
+    pulley2_moveup_thread.join();
+
+    // wait for mode changed and enabled
+    while ((pulley1_->mode_display != 0x01 || pulley1_->StatusWord != 0x0637) || (pulley2_->mode_display != 0x01 || pulley2_->StatusWord != 0x0637))
     {
-        // delay 10us
-        delay_us(10);
-        printf("pulley1 pos error:%d\n", abs(abs(init_pos1 - pulley1_->PosPV) - abs(kPulleysMoveUpDistance)));
-        printf("pulley2 pos error:%d\n", abs(abs(init_pos2 - pulley2_->PosPV) - abs(kPulleysMoveUpDistance)));
+        delay_us(1000);
     }
 
-    // stop pulleys,change to PPM
-    ChangeToPositionMode(kPulley1);
-    ChangeToPositionMode(kPulley2);
-
-    // enable motor
-    MotorEnable(kPulley1);
-    MotorEnable(kPulley2);
-
-    // wait for mode changed
-
     // change pulleys state to stop
+    pulley1_->motion_state = kStop;
+    pulley2_->motion_state = kStop;
 }
 
 // master move up
@@ -580,20 +622,18 @@ void robot::MasterMoveUp()
     // down claw hold
     DownClawHold();
 
-    // start nmt
     NMTstart();
-    // delay 1ms
-    delay_us(1000);
+    // delay_us(1000);
 
     PulleysTighten();
 
     NMTstart();
-    delay_us(1000);
+    // delay_us(1000);
     // down claw loose
     DownClawLoose();
 
     NMTstart();
-    delay_us(1000);
+    // delay_us(1000);
 
     // pulleys move up;
     PulleysMoveUp();
@@ -602,13 +642,111 @@ void robot::MasterMoveUp()
 
     // // down claw hold
     // DownClawHold();
-    // NMTstart();
-    // // disable pulleys
+
+    // // disable motors
     // MotorDisable(kPulley1);
     // MotorDisable(kPulley2);
+    // MotorDisable(kDownClaw1);
 
     // DownClawLoose();
 
     // disable the debug
     robot_->debug_en = 0;
+}
+
+/* --------------pulleys move down threads----------------- */
+void robot::Pulley1MoveDownThread()
+{
+    __s32 init_pos1;
+    // save inint pos
+    init_pos1 = pulley1_->PosPV;
+    printf("pulley1 move down thread!\n");
+    // wait pulleys reach the target pos, 100 inc error
+    while (pulley1_->PosPV > (init_pos1 - kPulleysMoveDownDistance))
+    {
+        // delay 10us
+        // delay_us(10);
+        printf("cunrrent pos1:%d\n", pulley1_->PosPV);
+        printf("target pos1:%d\n", (init_pos1 - kPulleysMoveDownDistance));
+    }
+
+    printf("cunrrent pos1:%d\n", pulley1_->PosPV);
+    // change to PPM
+    ChangeToPositionMode(kPulley1);
+
+    // enable motor
+    MotorEnable(kPulley1);
+}
+
+void robot::Pulley2MoveDownThread()
+{
+    __s32 init_pos2;
+    // save inint pos
+    init_pos2 = pulley2_->PosPV;
+    printf("pulley1 move down thread!\n");
+    // wait pulleys reach the target pos, 100 inc error
+    while (pulley2_->PosPV > (init_pos2 - kPulleysMoveDownDistance))
+    {
+        // delay 10us
+        // delay_us(10);
+        printf("cunrrent pos2:%d\n", pulley2_->PosPV);
+        printf("target pos2:%d\n", (init_pos2 - kPulleysMoveDownDistance));
+    }
+
+    printf("cunrrent pos2:%d\n", pulley2_->PosPV);
+    // change to PPM
+    ChangeToPositionMode(kPulley2);
+
+    // enable motor
+    MotorEnable(kPulley2);
+}
+
+// master move down
+void robot::MasterMoveDown()
+{
+
+    // tighten pulleys
+    PulleysTighten();
+    NMTstart();
+
+    // two pulleys move down thread, this pointer!!!
+    thread pulley1_movedown_thread(&robot::Pulley1MoveDownThread, this);
+    thread pulley2_movedown_thread(&robot::Pulley2MoveDownThread, this);
+
+    // loose down claw
+    DownClawLoose();
+
+    // wait distance reached
+    pulley1_movedown_thread.join();
+    pulley2_movedown_thread.join();
+
+    // wait for mode changed and enabled
+    while ((pulley1_->mode_display != 0x01 || pulley1_->StatusWord != 0x0637) || (pulley2_->mode_display != 0x01 || pulley2_->StatusWord != 0x0637))
+    {
+        delay_us(1000);
+    }
+
+    // change pulleys state to stop
+    pulley1_->motion_state = kStop;
+    pulley2_->motion_state = kStop;
+
+    // NMTstart();
+
+    // // down claw hold
+    // DownClawHold();
+
+    // // disable motors
+    // MotorDisable(kPulley1);
+    // MotorDisable(kPulley2);
+    // MotorDisable(kDownClaw1);
+
+    // DownClawLoose();
+
+    // disable the debug
+    robot_->debug_en = 0;
+}
+
+// pulleys move down
+void robot::PulleysMoveDown()
+{
 }

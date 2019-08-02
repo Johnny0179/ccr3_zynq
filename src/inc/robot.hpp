@@ -2,6 +2,11 @@
 
 #include "maxon.hpp"
 #include "freemodbus_tcp.h"
+#include <pthread.h>
+#include <iostream>
+#include <thread>
+
+using namespace std;
 
 struct robot_type
 {
@@ -86,6 +91,9 @@ private:
     // master move up motion debug
     static const __u16 kMasterMoveUp = 8;
 
+    // master move down motion debug
+    static const __u16 kMasterMoveDown = 9;
+
     /* debug state machine */
 
     /* -------------------------robot motions------------------------------ */
@@ -104,6 +112,7 @@ private:
 
     // pulleys move up distance
     static const __s32 kPulleysMoveUpDistance = 20000;
+    static const __s32 kPulleysMoveDownDistance = 20000;
 
     /* -------------------------debug parameters------------------------------------ */
     // claw relative pos 100 inc
@@ -122,12 +131,22 @@ public:
     void system(void);
 
     /* -------------------------robot control------------------------------ */
+    // master move up
     void MasterMoveUp();
-
     void DownClawHold();
     void DownClawLoose();
     void PulleysTighten();
+
     void PulleysMoveUp();
+    void Pulley1MoveUpThread();
+    void Pulley2MoveUpThread();
+
+    // master move down
+    void MasterMoveDown();
+    void PulleysMoveDown();
+    void Pulley1MoveDownThread();
+    void Pulley2MoveDownThread();
+
     /* -------------------------debug function------------------------------ */
     void UpClawDebug(void);
     void UpClawHoldDebug(void);
