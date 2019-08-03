@@ -101,8 +101,8 @@ public:
     // motors
     maxon_type *upclaw_, *upwheel_, *downclaw1_, *pulley1_, *pulley2_;
 
-    // delay_time wait for epos 50ms
-    static const __u32 kDelayEpos = 50000;
+    // delay_time wait for epos 100ms
+    static const __u32 kDelayEpos = 100000;
     /* variable */
     // Motor number
     static const __u8 kMotorNum = 6;
@@ -141,7 +141,7 @@ public:
 
     /* downclaw debug parameters */
     //initial torque, per thousand of “Motor rated torque
-    static const __u16 kDownClawInitialTorque = 300;
+    static const __u16 kDownClawInitialTorque = 600;
     // hold torque, 40%
     static const __u16 kDownClawHoldTorque = 400;
 
@@ -169,6 +169,8 @@ public:
     ssize_t TxPdo1(__u8 slave_id, __u16 ctrl_wrd);
     ssize_t TxPdo2(__u8 slave_id, __u16 ctrl_wrd, __s32 pos_sv);
     ssize_t TxPdo3(__u8 slave_id, __s32 speed_set);
+    // for torque set
+    ssize_t TxPdo3(__u8 slave_id, __s16 target_torque);
 
     //for mode set
     ssize_t TxPdo4(__u8 slave_id, __u16 mode_of_operation);
@@ -207,10 +209,13 @@ public:
     // change to torque mode
     __s8 ChangeToTorqueMode(const maxon_type *motor1, const maxon_type *motor2);
     void ChangeToTorqueMode(__u8 slave_id);
+     __s8 ChangeToTorqueMode(const maxon_type *motor);
 
     // change to PPM
     void ChangeToPositionMode(__u8 slave_id);
+    __s8 ChangeToPositionMode(const maxon_type *motor);
     void ChangeToPositionMode(__u8 slave_id1, __u8 slave_id2);
+   
 
     // move to relative position
     void MoveRelative(__u8 slave_id, __s32 relative_pos);
@@ -223,6 +228,7 @@ public:
 
     // set target torque
     ssize_t SetTargetTorque(__u8 slave_id, __s16 target_torque);
+    
 
     maxon(void);
     ~maxon();

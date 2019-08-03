@@ -174,6 +174,21 @@ ssize_t maxon::TxPdo3(__u8 slave_id, __s32 speed_set)
     return can0.send(&tx_pdo3_frame);
 }
 
+// TxPDO3 CST mode
+ssize_t maxon::TxPdo3(__u8 slave_id, __s16 target_torque)
+{
+    can_frame tx_pdo3_frame;
+
+    // tx_pdo4 frame init
+    tx_pdo3_frame.can_id = kPDO3rx + slave_id;
+
+    tx_pdo3_frame.can_dlc = 2;
+    tx_pdo3_frame.data[0] = target_torque & 0xff;
+    tx_pdo3_frame.data[1] = (target_torque >> 8) & 0xff;
+
+    return can0.send(&tx_pdo3_frame);
+}
+
 // TxPDO4 operation mode set
 ssize_t maxon::TxPdo4(__u8 slave_id, __u16 mode_of_operation)
 {
@@ -263,7 +278,7 @@ ssize_t maxon::SdoWrU32(__u8 slave_id, __u16 index, __u8 subindex, __u32 data)
 
 ssize_t maxon::SetCtrlWrd(__u8 slave_id, __u16 ctrl_wrd)
 {
-    delay_us(kDelayEpos);
+
     return TxPdo1(slave_id, ctrl_wrd);
 }
 
@@ -271,7 +286,9 @@ ssize_t maxon::SetCtrlWrd(__u8 slave_id, __u16 ctrl_wrd)
 void maxon::MotorEnable(__u8 slave_id)
 {
     SetCtrlWrd(slave_id, 0x0006);
+    delay_us(kDelayEpos);
     SetCtrlWrd(slave_id, 0x000F);
+    delay_us(kDelayEpos);
 }
 
 void maxon::MotorDisable(__u8 slave_id)
@@ -287,8 +304,7 @@ ssize_t maxon::SetMotorAbsPos(__u8 slave_id, __s32 abs_pos)
 }
 
 ssize_t maxon::SetMotorRelPos(__u8 slave_id, __s32 relative_pos)
-{ // wait epos
-    delay_us(kDelayEpos);
+{
     return TxPdo2(slave_id, kServRelPosSet, relative_pos);
 }
 
@@ -299,14 +315,13 @@ ssize_t maxon::SetMotorSpeed(__u8 slave_id, __s32 speed_set)
 
 ssize_t maxon::SetTargetTorque(__u8 slave_id, __s16 target_torque)
 {
-    delay_us(kDelayEpos);
-    return TxPdo4CST(slave_id, target_torque);
+
+    return TxPdo3(slave_id, target_torque);
 }
 
 // set motor operation mode
 ssize_t maxon::SetMotorMode(__u8 slave_id, __u16 operation_mode)
 {
-    delay_us(kDelayEpos);
     return TxPdo4(slave_id, operation_mode);
 }
 
@@ -421,12 +436,11 @@ void maxon::MotorParaRead(__u16 cob_id, maxon_type *motor, can_frame *recv_frame
 // move to relative position
 void maxon::MoveRelative(__u8 slave_id, __s32 relative_pos)
 {
-    // enable claw motor
-    MotorEnable(kUpWheel);
 
     SetMotorRelPos(slave_id, relative_pos);
-
+    delay_us(kDelayEpos);
     SetCtrlWrd(slave_id, 0x000F);
+    delay_us(kDelayEpos);
 }
 
 // move to relative position, 2 motors
@@ -520,6 +534,24 @@ void maxon::ChangeToTorqueMode(__u8 slave_id)
     NMTstart(slave_id);
 }
 
+// change to torque mode
+__s8 maxon::ChangeToTorqueMode(const maxon_type *motor)
+{
+
+    // change to CST mode
+    SetMotorMode(motor->motor_id, 0x0A);
+    // wait for epos
+    delay_us(kDelayEpos);
+    if (motor->mode_display == 0x0A)
+    {
+        return kCfgSuccess;
+    }
+    else
+    {
+        return kCfgFail;
+    }
+}
+
 // one motor
 void maxon::ChangeToPositionMode(__u8 slave_id)
 {
@@ -534,6 +566,23 @@ void maxon::ChangeToPositionMode(__u8 slave_id)
 
     // change to PPM mode;
     SetMotorMode(slave_id, 0x01);
+}
+
+// change to positionmode
+__s8 maxon::ChangeToPositionMode(const maxon_type *motor)
+{
+    // change to PPM mode;
+    SetMotorMode(motor->motor_id, 0x01);
+    // wait for EPOS response
+    delay_us(kDelayEpos);
+    if (motor->mode_display == 0x01)
+    {
+        return kCfgSuccess;
+    }
+    else
+    {
+        return kCfgFail;
+    }
 }
 
 // two motor

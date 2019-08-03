@@ -255,50 +255,7 @@ __u16 robot::Homing(maxon_type *motor)
 // down claw debug
 void robot::DownClawHoldDebug(void)
 {
-    // disable down claw 1
-    MotorDisable(kDownClaw1);
-
-    // change to CST mode;
-    SetMotorMode(kDownClaw1, 0x0A);
-
-    // remap TxPDO4 to target torque
-    TxPDO4Remap(kDownClaw1, kOBJTargetTorque);
-    NMTstart(kDownClaw1);
-
-    MotorEnable(kDownClaw1);
-
-    // set initial target torque
-    SetTargetTorque(kDownClaw1, kDownClawInitialTorque);
-
-    // set to 20% of target torque
-    while (downclaw1_->TrqPV > 0.5 * kDownClawHoldTorque)
-    {
-        SetTargetTorque(kDownClaw1, 0.2 * kDownClawHoldTorque);
-    }
-
-    // set to 40% of target torque
-    while (downclaw1_->TrqPV < 0.4 * kDownClawHoldTorque)
-    {
-        SetTargetTorque(kDownClaw1, 0.4 * kDownClawHoldTorque);
-    }
-
-    // set to 60% of target torque
-    while (downclaw1_->TrqPV < 0.6 * kDownClawHoldTorque)
-    {
-        SetTargetTorque(kDownClaw1, 0.6 * kDownClawHoldTorque);
-    }
-
-    // set to 80% of target torque
-    while (downclaw1_->TrqPV < 0.8 * kDownClawHoldTorque)
-    {
-        SetTargetTorque(kDownClaw1, 0.8 * kDownClawHoldTorque);
-    }
-
-    // set to 100% of target torque
-    while (downclaw1_->TrqPV < kDownClawHoldTorque)
-    {
-        SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
-    }
+    DownClawHold();
 
     // wait for loose cmd
     while (robot_->down_claw_debug_loose == 0)
@@ -307,22 +264,10 @@ void robot::DownClawHoldDebug(void)
         SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
     }
 
-    // // change motor motion state to hold;
-    // downclaw1_->motion_state = kHold;
+    DownClawLoose();
 
-    // MotorDisable(kDownClaw1);
-    // // remap TxPdo4 to mode of operation
-    // TxPDO4Remap(kDownClaw1, kOBJModeOfOperation);
-    // NMTstart(kDownClaw1);
-    // // change to PPM mode;
-    // SetMotorMode(kDownClaw1, 0x01);
-
-    // // loose down claw
-    // MotorEnable(kDownClaw1);
-    // MoveRelative(kDownClaw1, kDownClawLooseDistance);
-
-    // // change motor motion state to loose;
-    // downclaw1_->motion_state = kLoose;
+    // change motor motion state to loose;
+    downclaw1_->motion_state = kLoose;
 
     //clear debug parameters
     robot_->down_claw_debug_loose = 0;
@@ -416,42 +361,15 @@ void robot::UpClawHoldDebug(void)
 // down claw hold
 void robot::DownClawHold()
 {
-    ChangeToTorqueMode(kDownClaw1);
-
+    // enable motor
     MotorEnable(kDownClaw1);
 
+    // change to torque mode
+    ChangeToTorqueMode(downclaw1_);
+
     // set initial target torque
-    SetTargetTorque(kDownClaw1, kDownClawInitialTorque);
-
-    // set to 50% of target torque
-    while (downclaw1_->TrqPV > 0.5 * kDownClawHoldTorque)
-    {
-        SetTargetTorque(kDownClaw1, 0.5 * kDownClawHoldTorque);
-    }
-
-    // set to 40% of target torque
-    // while (downclaw1_->TrqPV < 0.4 * kDownClawHoldTorque)
-    // {
-    //     SetTargetTorque(kDownClaw1, 0.4 * kDownClawHoldTorque);
-    // }
-
-    // set to 60% of target torque
-    // while (downclaw1_->TrqPV < 0.6 * kDownClawHoldTorque)
-    // {
-    //     SetTargetTorque(kDownClaw1, 0.6 * kDownClawHoldTorque);
-    // }
-
-    // set to 80% of target torque
-    while (downclaw1_->TrqPV < 0.8 * kDownClawHoldTorque)
-    {
-        SetTargetTorque(kDownClaw1, 0.8 * kDownClawHoldTorque);
-    }
-
-    // set to 100% of target torque
-    while (downclaw1_->TrqPV < kDownClawHoldTorque)
-    {
-        SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
-    }
+    SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
+    delay_us(kDelayEpos);
 
     // wait the toruqe reach the target, 1% error
     while (abs(downclaw1_->TrqPV - kDownClawHoldTorque) > 10)
@@ -470,11 +388,11 @@ void robot::DownClawLoose()
 {
     __s32 init_pos;
 
-    // change to position mode
-    ChangeToPositionMode(kDownClaw1);
-
     // enable motor
     MotorEnable(kDownClaw1);
+
+    // change to position mode
+    ChangeToPositionMode(downclaw1_);
 
     // save inint pos
     init_pos = downclaw1_->PosPV;
@@ -500,21 +418,19 @@ void robot::DownClawLoose()
 // Pulleys tighten
 void robot::PulleysTighten()
 {
-    delay_us(100000);
-
-    // change to torque mode
-    if (ChangeToTorqueMode(pulley1_, pulley2_) == kCfgFail)
-    {
-        printf("torque mode config fail!\n");
-    }
-
-    // enable pulleys
+    // enable motors
     MotorEnable(kPulley1);
     MotorEnable(kPulley2);
 
+    // change to torque mode
+    ChangeToTorqueMode(pulley1_);
+    ChangeToTorqueMode(pulley2_);
+
     // set tighten torque
     SetTargetTorque(kPulley1, kPulleysTightenTorque);
+    delay_us(kDelayEpos);
     SetTargetTorque(kPulley2, kPulleysTightenTorque);
+    delay_us(kDelayEpos);
 
     // wait the toruqe reach the target, 1% error
     while ((abs(pulley1_->TrqPV - kPulleysTightenTorque) > 10) && (abs(pulley2_->TrqPV - kPulleysTightenTorque) > 10))
@@ -540,18 +456,15 @@ void robot::Pulley1MoveUpThread()
     // wait pulleys reach the target pos, 100 inc error
     while (pulley1_->PosPV < (init_pos1 + kPulleysMoveUpDistance))
     {
-        // delay 10us
-        // delay_us(10);
+        delay_us(10000);
         printf("cunrrent pos1:%d\n", pulley1_->PosPV);
         printf("target pos1:%d\n", (init_pos1 + kPulleysMoveUpDistance));
     }
 
     printf("cunrrent pos1:%d\n", pulley1_->PosPV);
-    // change to PPM
-    ChangeToPositionMode(kPulley1);
 
-    // enable motor
-    MotorEnable(kPulley1);
+    // change to PPM
+    ChangeToPositionMode(pulley1_);
 }
 
 //
@@ -562,18 +475,15 @@ void robot::Pulley2MoveUpThread()
     printf("pulley2 move up thread!\n");
     while (pulley2_->PosPV < (init_pos2 + kPulleysMoveUpDistance))
     {
-        // // delay 10us
-        delay_us(10);
+        delay_us(10000);
         printf("cunrrent pos2:%d\n", pulley2_->PosPV);
         printf("target pos2:%d\n", (init_pos2 + kPulleysMoveUpDistance));
     }
 
     printf("cunrrent pos2:%d\n", pulley2_->PosPV);
-    // change to PPM
-    ChangeToPositionMode(kPulley2);
 
-    // enable motor
-    MotorEnable(kPulley2);
+    // change to PPM
+    ChangeToPositionMode(pulley2_);
 }
 
 // Pulleys move up
@@ -582,7 +492,9 @@ void robot::PulleysMoveUp()
 
     // set pulling torque
     SetTargetTorque(kPulley1, kPulleysPullTorque);
+    delay_us(kDelayEpos);
     SetTargetTorque(kPulley2, kPulleysPullTorque);
+    delay_us(kDelayEpos);
 
     // wait the toruqe reach the target, 1% error
     while (abs(pulley1_->TrqPV - kPulleysPullTorque) > 10 && abs(pulley2_->TrqPV - kPulleysPullTorque) > 10)
@@ -621,34 +533,23 @@ void robot::MasterMoveUp()
 
     // down claw hold
     DownClawHold();
-
-    NMTstart();
-    // delay_us(1000);
-
+    // pulleys tighten
     PulleysTighten();
-
-    NMTstart();
-    // delay_us(1000);
     // down claw loose
     DownClawLoose();
-
-    NMTstart();
-    // delay_us(1000);
-
     // pulleys move up;
     PulleysMoveUp();
+    // down claw hold
+    DownClawHold();
+    delay_us(200000);
 
-    // NMTstart();
-
-    // // down claw hold
-    // DownClawHold();
-
-    // // disable motors
-    // MotorDisable(kPulley1);
-    // MotorDisable(kPulley2);
     // MotorDisable(kDownClaw1);
 
-    // DownClawLoose();
+    /* ----test---- */
+    DownClawLoose();
+    // disable motors
+    MotorDisable(kPulley1);
+    MotorDisable(kPulley2);
 
     // disable the debug
     robot_->debug_en = 0;
@@ -707,7 +608,6 @@ void robot::MasterMoveDown()
 
     // tighten pulleys
     PulleysTighten();
-    NMTstart();
 
     // two pulleys move down thread, this pointer!!!
     thread pulley1_movedown_thread(&robot::Pulley1MoveDownThread, this);
@@ -729,8 +629,6 @@ void robot::MasterMoveDown()
     // change pulleys state to stop
     pulley1_->motion_state = kStop;
     pulley2_->motion_state = kStop;
-
-    // NMTstart();
 
     // // down claw hold
     // DownClawHold();
