@@ -605,26 +605,3 @@ void maxon::ChangeToPositionMode(__u8 slave_id1, __u8 slave_id2)
     SetMotorMode(slave_id2, 0x01);
 }
 
-// pos error calculation
-__u32 maxon::PosErrorCalc(__s32 init_pos, __s32 current_pos, __s32 target_pos)
-{
-
-    // if they have the same sign
-    if (init_pos * current_pos > 0)
-    {
-        return abs(current_pos - init_pos - target_pos);
-    }
-    else
-    {
-        // different sign
-        if (init_pos > 0 && current_pos < 0)
-        {
-            return abs(0);
-        }
-
-        if (init_pos < 0 && current_pos > 0)
-        {
-            /* code */
-        }
-    }
-}

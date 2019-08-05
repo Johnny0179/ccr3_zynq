@@ -31,15 +31,14 @@ struct maxon_type
     // target torque
     __u16 target_torque;
 
-    // homming
-    __u16 homing_state;
-    __u16 homing_en;
+    // init pos
+    __s32 init_pos;
 
-    //homing threhold
-    __u16 homing_threhold;
-    __u16 homing_delta_pos;
+    // last time pos
+    __s32 last_pos;
 
-    __s32 PosLocked;
+    // loose torque
+    __s16 loose_torque;
 };
 
 class maxon : public can
@@ -108,6 +107,7 @@ public:
     static const __u8 kMotorNum = 6;
 
     // motor motion state
+    static const __u8 kIdle = 0;
     static const __u8 kHold = 1;
     static const __u8 kLoose = 2;
     static const __u8 kTighten = 3;
@@ -147,7 +147,7 @@ public:
 
     static const __useconds_t kDownClawDelayUs = 500000;
     //loose distance
-    static const __s32 kDownClawLooseDistance = -300000;
+    static const __s32 kDownClawLooseDistance = -200000;
 
     // pulleys debug parameters
     static const __u32 kPulleysHomingTorque = 10;
@@ -209,13 +209,12 @@ public:
     // change to torque mode
     __s8 ChangeToTorqueMode(const maxon_type *motor1, const maxon_type *motor2);
     void ChangeToTorqueMode(__u8 slave_id);
-     __s8 ChangeToTorqueMode(const maxon_type *motor);
+    __s8 ChangeToTorqueMode(const maxon_type *motor);
 
     // change to PPM
     void ChangeToPositionMode(__u8 slave_id);
     __s8 ChangeToPositionMode(const maxon_type *motor);
     void ChangeToPositionMode(__u8 slave_id1, __u8 slave_id2);
-   
 
     // move to relative position
     void MoveRelative(__u8 slave_id, __s32 relative_pos);
@@ -223,12 +222,9 @@ public:
     void MoveRelative(__u8 slave_id1, __u8 slave_id2, __s32 relative_pos);
     // move to absolute position
     void MoveAbsolute(__u8 slave_id, __s32 absolute_pos);
-    // void pos error check
-    __u32 PosErrorCalc(__s32 init_pos, __s32 current_pos, __s32 target_pos);
 
     // set target torque
     ssize_t SetTargetTorque(__u8 slave_id, __s16 target_torque);
-    
 
     maxon(void);
     ~maxon();

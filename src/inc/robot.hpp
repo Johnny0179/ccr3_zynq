@@ -107,8 +107,11 @@ private:
     // tighten torque 10%
     static const __s16 kPulleysTightenTorque = 100;
 
-    // pull torque 50%
-    static const __s16 kPulleysPullTorque = 500;
+    // pull torque 60%
+    static const __s16 kPulleysPullTorque = 600;
+
+    // loose torque 10%
+    static const __s16 kPulleysLooseTorque = 100;
 
     // pulleys move up distance
     static const __s32 kPulleysMoveUpDistance = 20000;
@@ -135,7 +138,7 @@ public:
     void MasterMoveUp();
     void DownClawHold();
     void DownClawLoose();
-    void PulleysTighten();
+    void PulleysTorque(__s16 torque);
 
     void PulleysMoveUp();
     void Pulley1MoveUpThread();
@@ -158,5 +161,5 @@ public:
     void DownClawHoldDebug(void);
 
     // homing
-    __u16 Homing(maxon_type *motor);
+    void Homing(void);
 };
