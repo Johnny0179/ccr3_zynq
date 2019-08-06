@@ -26,16 +26,15 @@ struct maxon_type
     /* ------------------put new variables blow this line---------------- */
     // mode of operation select
     __u16 motion_state;
-    // Torque offset
-    __u16 torque_offset;
-    // target torque
-    __u16 target_torque;
 
     // init pos
     __s32 init_pos;
 
     // last time pos
     __s32 last_pos;
+
+    // delta pos
+    __s32 delta_pos;
 
     // loose torque
     __s16 loose_torque;
@@ -201,6 +200,7 @@ public:
 
     // enable motor
     void MotorEnable(__u8 slave_id);
+    __s8 MotorEnable(const maxon_type *motor);
     // disable motor
     void MotorDisable(__u8 slave_id);
     // quick stop motor

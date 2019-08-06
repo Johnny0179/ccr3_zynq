@@ -291,6 +291,29 @@ void maxon::MotorEnable(__u8 slave_id)
     delay_us(kDelayEpos);
 }
 
+// enable motor
+__s8 maxon::MotorEnable(const maxon_type *motor)
+{
+    SetCtrlWrd(motor->motor_id, 0x0006);
+    delay_us(kDelayEpos);
+    // bit5: quick stop
+    while ((motor->StatusWord >> 5 & 1) != 1)
+    {
+        // must delay!
+        delay_us(kDelayEpos);
+    }
+
+    SetCtrlWrd(motor->motor_id, 0x000F);
+    delay_us(kDelayEpos);
+    // wait enable cmd success
+    while ((motor->StatusWord & 0x00ff) != 0x37)
+    {
+        // must delay!
+        delay_us(kDelayEpos);
+    }
+    return kCfgSuccess;
+}
+
 void maxon::MotorDisable(__u8 slave_id)
 {
 
@@ -541,15 +564,21 @@ __s8 maxon::ChangeToTorqueMode(const maxon_type *motor)
     // change to CST mode
     SetMotorMode(motor->motor_id, 0x0A);
     // wait for epos
-    delay_us(kDelayEpos);
-    if (motor->mode_display == 0x0A)
+    // delay_us(kDelayEpos);
+    // if (motor->mode_display == 0x0A)
+    // {
+    //     return kCfgSuccess;
+    // }
+    // else
+    // {
+    //     return kCfgFail;
+    // }
+    while (motor->mode_display!=0x0A)
     {
-        return kCfgSuccess;
+        delay_us(1000);
+
     }
-    else
-    {
-        return kCfgFail;
-    }
+    return kCfgSuccess;
 }
 
 // one motor
@@ -574,15 +603,21 @@ __s8 maxon::ChangeToPositionMode(const maxon_type *motor)
     // change to PPM mode;
     SetMotorMode(motor->motor_id, 0x01);
     // wait for EPOS response
-    delay_us(kDelayEpos);
-    if (motor->mode_display == 0x01)
+    // delay_us(kDelayEpos);
+    // if (motor->mode_display == 0x01)
+    // {
+    //     return kCfgSuccess;
+    // }
+    // else
+    // {
+    //     return kCfgFail;
+    // }
+    while (motor->mode_display!=0x01)
     {
-        return kCfgSuccess;
+       delay_us(1000);
     }
-    else
-    {
-        return kCfgFail;
-    }
+    
+    return kCfgSuccess;
 }
 
 // two motor
