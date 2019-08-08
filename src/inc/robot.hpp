@@ -114,8 +114,8 @@ private:
     static const __s16 kPulleysLooseTorque = 100;
 
     // pulleys move up distance
-    static const __s32 kPulleysMoveUpDistance = 100000;
-    static const __s32 kPulleysMoveDownDistance = 100000;
+    static const __s32 kPulleysMoveUpDistance = 20000;
+    static const __s32 kPulleysMoveDownDistance = 20000;
 
     /* -------------------------debug parameters------------------------------------ */
     // claw relative pos 100 inc

@@ -448,13 +448,19 @@ void robot::PulleysMoveUp()
     delay_us(kDelayEpos);
     SetMotorRelPos(kPulley2, kPulleysMoveUpDistance);
 
-    // two pulleys move up thread, this pointer!!!
-    thread pulley1_moveup_thread(&robot::Pulley1MoveUpThread, this);
-    thread pulley2_moveup_thread(&robot::Pulley2MoveUpThread, this);
+    // // two pulleys move up thread, this pointer!!!
+    // thread pulley1_moveup_thread(&robot::Pulley1MoveUpThread, this);
+    // thread pulley2_moveup_thread(&robot::Pulley2MoveUpThread, this);
 
-    // wait distance reached
-    pulley1_moveup_thread.join();
-    pulley2_moveup_thread.join();
+    // // wait distance reached
+    // pulley1_moveup_thread.join();
+    // pulley2_moveup_thread.join();
+
+    // wait pulleys reach the target pos, 1000 inc error
+    while (abs(pulley1_->PosPV - (pulley1_->init_pos + kPulleysMoveUpDistance)) > 1000 || abs(pulley2_->PosPV - (pulley2_->init_pos + kPulleysMoveUpDistance)) > 1000)
+    {
+        delay_us(100);
+    }
 
     // change pulleys state to stop
     pulley1_->motion_state = kStop;
@@ -511,8 +517,8 @@ void robot::Pulley1MoveDownThread()
 {
 
     printf("pulley1 move down thread!\n");
-    // wait pulleys reach the target pos, 100 inc error
-    while (abs(pulley1_->PosPV - (pulley1_->init_pos - kPulleysMoveDownDistance)) > 100)
+    // wait pulleys reach the target pos, 1000 inc error
+    while (abs(pulley1_->PosPV - (pulley1_->init_pos - kPulleysMoveDownDistance)) > 1000)
     {
 
         printf("init pos1:%d\n", pulley1_->init_pos);
@@ -573,13 +579,19 @@ void robot::MasterMoveDown()
     delay_us(kDelayEpos);
     SetMotorRelPos(kPulley2, -kPulleysMoveDownDistance);
 
-    // two pulleys move down thread, this pointer!!!
-    thread pulley1_movedown_thread(&robot::Pulley1MoveDownThread, this);
-    thread pulley2_movedown_thread(&robot::Pulley2MoveDownThread, this);
+    // // two pulleys move down thread, this pointer!!!
+    // thread pulley1_movedown_thread(&robot::Pulley1MoveDownThread, this);
+    // thread pulley2_movedown_thread(&robot::Pulley2MoveDownThread, this);
 
-    // wait distance reached
-    pulley1_movedown_thread.join();
-    pulley2_movedown_thread.join();
+    // // wait distance reached
+    // pulley1_movedown_thread.join();
+    // pulley2_movedown_thread.join();
+
+    // wait pulleys reach the target pos, 1000 inc error
+    while (abs(pulley1_->PosPV - (pulley1_->init_pos - kPulleysMoveDownDistance)) > 1000 || abs(pulley2_->PosPV - (pulley2_->init_pos - kPulleysMoveDownDistance)) > 1000)
+    {
+        delay_us(100);
+    }
 
     // down claw hold
     DownClawHold();
