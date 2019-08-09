@@ -105,7 +105,7 @@ private:
 
     // robot parameters
     // tighten torque 10%
-    static const __s16 kPulleysTightenTorque = 200;
+    static const __s16 kPulleysTightenTorque = 100;
 
     // pull torque 50%
     static const __s16 kPulleysPullTorque = 500;
@@ -115,7 +115,7 @@ private:
 
     // pulleys move up distance
     static const __s32 kPulleysMoveUpDistance = 20000;
-    static const __s32 kPulleysMoveDownDistance = 20000;
+    static const __s32 kPulleysMoveDownDistance = -20000;
 
     /* -------------------------debug parameters------------------------------------ */
     // claw relative pos 100 inc
