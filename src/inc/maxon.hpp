@@ -37,6 +37,12 @@ struct maxon_type {
 
   // loose torque
   __s16 loose_torque;
+
+  // actual average speed
+  __s32 actual_average_vel;
+
+  //   actual average troque
+  __s16 actual_average_torque;
 };
 
 class maxon : public can {
@@ -131,11 +137,11 @@ class maxon : public can {
   // initial torque, per thousand of “Motor rated torque
   static const __s16 kUpClawInitialTorque = -600;
 
-  // upclaw hold torque, -47%
-  static const __s16 kUpClawHoldTorque = -470;
+  // upclaw hold torque, -50%
+  static const __s16 kUpClawHoldTorque = -500;
 
   // upclaw loose distance
-  static const __s32 kUpClawLooseDistance = 400000;
+  static const __s32 kUpClawLooseDistance = 700000;
 
   /* downclaw debug parameters */
   // initial torque, per thousand of “Motor rated torque
@@ -194,12 +200,16 @@ class maxon : public can {
   __s8 SetMotorAbsPos(const maxon_type *motor, __s32 abs_pos);
   __s8 SetMotorAbsPos(const maxon_type *motor1, const maxon_type *motor2,
                       __s32 abs_pos1, __s32 abs_pos2);
+  __s8 SetMotorAbsPos(const maxon_type *motor1, const maxon_type *motor2,
+                      const maxon_type *motor3, __s32 abs_pos1, __s32 abs_pos2,
+                      __s32 abs_pos3);
 
   // set relative position
   ssize_t SetMotorRelPos(__u8 slave_id, __s32 relative_pos);
   __s8 SetMotorRelPos(maxon_type *motor, __s32 relative_pos);
   // set motor speed
   ssize_t SetMotorSpeed(__u8 slave_id, __s32 speed_set);
+  __s8 SetMotorSpeed(const maxon_type *motor, __s32 speed);
 
   // set motor operation mode
   ssize_t SetMotorMode(__u8 slave_id, __u16 operation_mode);
@@ -209,6 +219,7 @@ class maxon : public can {
   __s8 MotorEnable(const maxon_type *motor);
   // disable motor
   void MotorDisable(__u8 slave_id);
+  __s8 MotorDisable(const maxon_type *motor);
   // quick stop motor
   void MotorQuickStop(__u8 slave_id);
 

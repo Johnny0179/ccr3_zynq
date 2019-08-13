@@ -1,165 +1,199 @@
 #pragma once
 
-#include "maxon.hpp"
-#include "freemodbus_tcp.h"
 #include <pthread.h>
 #include <iostream>
 #include <thread>
+#include "freemodbus_tcp.h"
+#include "maxon.hpp"
 
 using namespace std;
 
-struct robot_type
-{
-    // system state
-    __u16 system_state;
+struct robot_type {
+  // system state
+  __u16 system_state;
 
-    // system operation mode select
-    __u16 mode_select;
+  // system operation mode select
+  __u16 mode_select;
 
-    // debug mode select
-    __u16 debug_mode_select;
+  // debug mode select
+  __u16 debug_mode_select;
 
-    // debug enable?
-    __u16 debug_en;
+  // debug enable?
+  __u16 debug_en;
 
-    // claw debug factor
-    __s16 upclaw_debug_factor;
+  // claw debug factor
+  __s16 upclaw_debug_factor;
 
-    // up claw loose
-    __s16 up_claw_debug_loose;
+  // up claw loose
+  __s16 up_claw_debug_loose;
 
-    // upwheel debug factor
-    __s16 upwheel_debug_factor;
+  // upwheel debug factor
+  __s16 upwheel_debug_factor;
 
-    // pulleys distance factor;
-    __s16 pulleys_distance_factor;
+  // pulleys distance factor;
+  __s16 pulleys_distance_factor;
 
-    // pulleys homing torque
-    __s16 pulleys_homing_torque;
+  // pulleys homing torque
+  __s16 pulleys_homing_torque;
 
-    // pulley 1 torque
-    __s16 pulley1_torque;
-    __s16 pulley2_torque;
+  // pulley 1 torque
+  __s16 pulley1_torque;
+  __s16 pulley2_torque;
 
-    // pulleys homing done
-    __u16 pulleys_homing_done;
+  // pulleys homing done
+  __u16 pulleys_homing_done;
 
-    // down claw 1 debug;
-    __s16 down_claw_debug_loose;
-    // up_claw_debug done
-    __u16 up_claw_hold_done;
+  // down claw 1 debug;
+  __s16 down_claw_debug_loose;
+  // up_claw_debug done
+  __u16 up_claw_hold_done;
 
-    /* ------------------move up motion debug-------------------------- */
-    __u16 down_claw_loose_en;
+  /* ------------------move up motion debug-------------------------- */
+  __u16 down_claw_loose_en;
 };
 
-class robot : public maxon
-{
-private:
-    robot_type *robot_;
+class robot : public maxon {
+ private:
+  robot_type *robot_;
 
-    /* -------------------------robot modes------------------------------- */
-    // idle mode
-    static const __u16 kIdleMode = 0;
-    // debug mode
-    static const __u16 kDebugMode = 1;
-    // nalmal motion mode
-    static const __u16 kNomalMode = 2;
+  /* -------------------------robot modes------------------------------- */
+  // idle mode
+  static const __u16 kIdleMode = 0;
+  // debug mode
+  static const __u16 kDebugMode = 1;
+  // nalmal motion mode
+  static const __u16 kNomalMode = 2;
 
-    /* ------------------------debug ------------------------------------ */
-    // claw motor debug
-    static const __u16 kUpClawMotorDebug = 1;
+  /* ------------------------debug ------------------------------------ */
+  // claw motor debug
+  static const __u16 kUpClawMotorDebug = 1;
 
-    // upwheel motor debug
-    static const __u16 kUpWheelMotorDebug = 2;
+  // upwheel motor debug
+  static const __u16 kUpWheelMotorDebug = 2;
 
-    // claw hold debug
-    static const __u16 kUpClawHoldDebug = 3;
+  // claw hold debug
+  static const __u16 kUpClawHoldDebug = 3;
 
-    // pulley motion debug
-    static const __u16 kPulleysMotionDebug = 4;
+  // pulley motion debug
+  static const __u16 kPulleysMotionDebug = 4;
 
-    // pulley homing debug
-    static const __u16 kPulleysHomingDebug = 5;
+  // pulley homing debug
+  static const __u16 kPulleysHomingDebug = 5;
 
-    // up claw hold motion
-    static const __u16 kDownClawHoldDebug = 6;
+  // up claw hold motion
+  static const __u16 kDownClawHoldDebug = 6;
 
-    // homing motion debug
-    static const __u16 kHomingDebug = 7;
+  // homing motion debug
+  static const __u16 kHomingDebug = 7;
 
-    // master move up motion debug
-    static const __u16 kMasterMoveUp = 8;
+  // master move up motion debug
+  static const __u16 kMasterMoveUp = 8;
 
-    // master move down motion debug
-    static const __u16 kMasterMoveDown = 9;
+  // master move down motion debug
+  static const __u16 kMasterMoveDown = 9;
 
-    /* debug state machine */
+  //   slave move down motion debug
+  static const __u16 kSlaveMoveDown = 10;
 
-    /* -------------------------robot motions------------------------------ */
+  //   slave move up motion debug
+  static const __u16 kSlaveMoveUp = 11;
 
-    //homing states
-    static const __u8 kHomingIdle = 0;
-    static const __u8 kHoming = 1;
-    static const __u8 kHomingDone = 2;
+  /* debug state machine */
 
-    // robot parameters
-    // tighten torque 10%
-    static const __s16 kPulleysTightenTorque = 100;
+  /* -------------------------robot motions------------------------------ */
 
-    // pull torque 50%
-    static const __s16 kPulleysPullTorque = 500;
+  // homing states
+  static const __u8 kHomingIdle = 0;
+  static const __u8 kHoming = 1;
+  static const __u8 kHomingDone = 2;
 
-    // loose torque 10%
-    static const __s16 kPulleysLooseTorque = 100;
+  // robot parameters
+  // tighten torque 10%
+  static const __s16 kPulleysTightenTorque = 100;
 
-    // pulleys move up distance
-    static const __s32 kPulleysMoveUpDistance = 20000;
-    static const __s32 kPulleysMoveDownDistance = -20000;
+  // pull torque 50%
+  static const __s16 kPulleysPullTorque = 500;
 
-    /* -------------------------debug parameters------------------------------------ */
-    // claw relative pos 100 inc
-    static const __u32 kUpClawDebugRelaPos = 100;
+  // loose torque 10%
+  static const __s16 kPulleysLooseTorque = 100;
 
-    //upwheel relative pos 1000inc
-    static const __u32 kUpWheelDebugRelaPos = 1000;
-    //pulleys relative pos 1000inc
-    static const __u32 kPulleysDebugRelaPos = 100;
+  // pulleys move distance
+  static const __s32 kPulleysMoveUpDistance = 20000;
+  static const __s32 kPulleysMoveDownDistance = -20000;
 
-public:
-    robot(USHORT reg[]);
-    ~robot();
+  /* upwheel motion debug */
+  //   upwheel move distance
+  static const __s32 kUpwheelMoveUpDistance = 80000;
+  static const __s32 kUpwheelMoveDownDistance = -80000;
 
-    /* -------------------------system------------------------------ */
-    void system(void);
+  //   move speed
+  static const __s16 kMoveUpSpeed = 2000;
+  static const __s16 kMoveDownSpeed = -2000;
 
-    /* -------------------------robot control------------------------------ */
-    // master move up
-    void MasterMoveUp();
-    void DownClawHold();
-    void DownClawLoose();
-    void PulleysTorque(__s16 torque);
+  // speed factor slave : master
+  const double kSpeedFactor = 0.25;
+  // static const __u8 kSpeedFactor = 1;
 
-    void PulleysMoveUp();
-    void Pulley1MoveUpThread();
-    void Pulley2MoveUpThread();
+  //   relative speed factor
+  //   static const double kRelativeSpeedFactor = 0.4;
 
-    // master move down
-    void MasterMoveDown();
-    void PulleysMoveDown();
-    void Pulley1MoveDownThread();
-    void Pulley2MoveDownThread();
+  /* -------------------------debug
+   * parameters------------------------------------ */
+  // claw relative pos 100 inc
+  static const __u32 kUpClawDebugRelaPos = 100;
 
-    /* -------------------------debug function------------------------------ */
-    void UpClawDebug(void);
-    void UpClawHoldDebug(void);
-    void UpWheelDebug(void);
-    void PulleysDebug(void);
-    void PulleysHomingDebug(void);
+  // upwheel relative pos 1000inc
+  static const __u32 kUpWheelDebugRelaPos = 1000;
+  // pulleys relative pos 1000inc
+  static const __u32 kPulleysDebugRelaPos = 100;
 
-    // up claw hold debug
-    void DownClawHoldDebug(void);
+ public:
+  robot(USHORT reg[]);
+  ~robot();
 
-    // homing
-    void Homing(void);
+  /* -------------------------system------------------------------ */
+  void system(void);
+
+  /* -------------------------robot control------------------------------ */
+  // up claw
+  void UpClawHold();
+  void UpClawLoose();
+
+  // master move up
+  void MasterMoveUp();
+  void DownClawHold();
+  void DownClawLoose();
+  void PulleysTorque(__s16 torque);
+  void PulleysMoveUp();
+
+  // master move down
+  void MasterMoveDown();
+  void PulleysMoveDown();
+
+  //   salve move down
+  void SlaveMoveDown();
+  void UpWheelMoveDown();
+  void UpWheelSpeedDown();
+  void Pulley1SpeedDown();
+  void Pulley2SpeedDown();
+
+  //   salve move up
+  void SlaveMoveUp();
+  void UpWheelMoveUp();
+  void UpWheelSpeedUp();
+  void Pulley1SpeedUp();
+  void Pulley2SpeedUp();
+
+  /* -------------------------debug function------------------------------ */
+  void UpClawDebug(void);
+  void UpClawHoldDebug(void);
+  void UpWheelDebug(void);
+  void PulleysDebug(void);
+  void PulleysHomingDebug(void);
+
+  // up claw hold debug
+  void DownClawHoldDebug(void);
+
+  // homing
+  void Homing(void);
 };

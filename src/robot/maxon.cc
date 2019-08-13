@@ -313,6 +313,17 @@ __s8 maxon::MotorEnable(const maxon_type *motor) {
 
 void maxon::MotorDisable(__u8 slave_id) { SetCtrlWrd(slave_id, 0x0000); }
 
+__s8 maxon::MotorDisable(const maxon_type *motor) {
+  SetCtrlWrd(motor->motor_id, 0x0000);
+  delay_us(kDelayEpos);
+  // wait disable cmd success
+  while (motor->StatusWord != 0x0240) {
+    delay_us(kDelayEpos);
+  }
+
+  return kCfgSuccess;
+}
+
 ssize_t maxon::SetMotorAbsPos(__u8 slave_id, __s32 abs_pos) {
   delay_us(kDelayEpos);
   return TxPdo2(slave_id, kServAbsPosSet, abs_pos);
@@ -352,6 +363,31 @@ __s8 maxon::SetMotorAbsPos(const maxon_type *motor1, const maxon_type *motor2,
   return kCfgSuccess;
 }
 
+__s8 maxon::SetMotorAbsPos(const maxon_type *motor1, const maxon_type *motor2,
+                           const maxon_type *motor3, __s32 abs_pos1,
+                           __s32 abs_pos2, __s32 abs_pos3) {
+  TxPdo2(motor1->motor_id, kServAbsPosSet, abs_pos1, 0x01);
+  TxPdo2(motor2->motor_id, kServAbsPosSet, abs_pos2, 0x01);
+  TxPdo2(motor3->motor_id, kServAbsPosSet, abs_pos2, 0x01);
+  delay_us(kDelayEpos);
+
+  // wait the abs pos reach the target, 1000inc error
+  while (motor1->mode_display != 0x01 || abs(motor1->PosPV - abs_pos1) > 1000 ||
+         abs(motor2->PosPV - abs_pos2) > 1000 || motor2->mode_display != 0x01 ||
+         motor3->mode_display != 0x01 || abs(motor3->PosPV - abs_pos3) > 1000) {
+    printf("configuring!\n");
+
+    delay_us(kDelayEpos);
+    TxPdo2(motor1->motor_id, kServAbsPosSet, abs_pos1, 0x01);
+    SetCtrlWrd(motor1->motor_id, 0x000F);
+    TxPdo2(motor2->motor_id, kServAbsPosSet, abs_pos2, 0x01);
+    SetCtrlWrd(motor2->motor_id, 0x000F);
+    TxPdo2(motor3->motor_id, kServAbsPosSet, abs_pos3, 0x01);
+    SetCtrlWrd(motor3->motor_id, 0x000F);
+  }
+  return kCfgSuccess;
+}
+
 ssize_t maxon::SetMotorRelPos(__u8 slave_id, __s32 relative_pos) {
   return TxPdo2(slave_id, kServRelPosSet, relative_pos);
 }
@@ -379,6 +415,25 @@ ssize_t maxon::SetMotorSpeed(__u8 slave_id, __s32 speed_set) {
   return TxPdo3(slave_id, speed_set);
 }
 
+// set speed
+__s8 maxon::SetMotorSpeed(const maxon_type *motor, __s32 speed) {
+  // set
+  TxPdo4(motor->motor_id, speed, 0x03);
+  delay_us(kDelayEpos);
+  // wait the toruqe reach the speed, 100rps error
+  while (motor->mode_display != 0x03 ||
+         abs(motor->actual_average_vel - speed) > 100) {
+    printf("motor %d configuring!\n", motor->motor_id);
+    printf("current speed:%d\n", motor->SpdPV);
+    printf("target speed:%d\n", speed);
+    TxPdo4(motor->motor_id, speed, 0x03);
+    SetCtrlWrd(motor->motor_id, 0x000F);
+    delay_us(kDelayEpos);
+  }
+
+  return kCfgSuccess;
+}
+
 ssize_t maxon::SetTargetTorque(__u8 slave_id, __s16 target_torque) {
   return TxPdo3(slave_id, target_torque, 0x0A);
 }
@@ -390,7 +445,7 @@ __s8 maxon::SetTargetTorque(const maxon_type *motor, __s16 target_torque) {
 
   // wait the toruqe reach the target, 1% error
   while (motor->mode_display != 0x0A ||
-         abs(motor->TrqPV - target_torque) > 10) {
+         abs(motor->actual_average_torque - target_torque) > 10) {
     TxPdo3(motor->motor_id, target_torque, 0x0A);
     delay_us(kDelayEpos);
   }
@@ -469,12 +524,11 @@ void maxon::MotorParaRead(__u16 cob_id, maxon_type *motor,
 
       // 0x380
     case kPDO3tx:
-      motor->SpdPV =
+      motor->actual_average_vel =
           (__s32)((recv_frame->data[3] << 24) | recv_frame->data[2] << 16 |
                   (recv_frame->data[1] << 8) | recv_frame->data[0]);
-      motor->PosPV =
-          (__s32)((recv_frame->data[7] << 24) | (recv_frame->data[6] << 16) |
-                  (recv_frame->data[5] << 8) | recv_frame->data[4]);
+      motor->actual_average_torque =
+          (__s16)((recv_frame->data[5] << 8) | recv_frame->data[4]);
       break;
 
       // 0x480
@@ -486,31 +540,6 @@ void maxon::MotorParaRead(__u16 cob_id, maxon_type *motor,
       motor->TrqPV = (__s16)((recv_frame->data[5] << 8) | recv_frame->data[4]);
       motor->mode_display = recv_frame->data[6];
       break;
-
-      // case PDO1rx: // 0x200
-      // case PDO2rx: // 0x300
-      // case PDO3rx: // 0x400
-      // case PDO4rx: // 0x500
-      //              //
-      //              ��վ���͸���վ��PDO,û�������ݲ���Ҫ����
-      //              // proceedPDO(d,m);
-      //     break;
-      // case SDOtx: // 0x581,��վ���գ���վ���ͣ�
-      //     ProcessSDOrx(m);
-      //     OSSemPost(sem_SrvCAN_rx);
-
-      // case SDOrx:          // 0x600,��վ���ͣ���վ����
-      //     ProcessSDOtx(m);
-      //     //�鿴Ӧ���Ƿ���ȷ����ʼ��Ҫ�����״̬.
-      //     OSSemPost(sem_SrvCAN_rx);
-      //     break;
-      // case NODE_GUARD: // 0x700
-      //     ptrServ->ServSTA =
-      //         (m->data[0]) & 0x7F; // 0,or 0x04(0x84),or 0x05(0x85),or
-      //         0x7F(0xFF)
-      //     OSSemPost(sem_SrvCAN_rx);
-      //     // proceedNODE_GUARD(d,m);
-      //     break;
 
     default:
       break;
