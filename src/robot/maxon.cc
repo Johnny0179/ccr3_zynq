@@ -293,6 +293,7 @@ void maxon::MotorEnable(__u8 slave_id) {
 
 // enable motor
 __s8 maxon::MotorEnable(const maxon_type *motor) {
+  printf("motor id: %d\n", motor->motor_id);
   SetCtrlWrd(motor->motor_id, 0x0006);
   delay_us(kDelayEpos);
   // bit5: quick stop
@@ -448,8 +449,10 @@ __s8 maxon::SetTargetTorque(const maxon_type *motor, __s16 target_torque) {
          abs(motor->actual_average_torque - target_torque) > 10) {
     TxPdo3(motor->motor_id, target_torque, 0x0A);
     delay_us(kDelayEpos);
+    printf("motor%d torque:%d \n", motor->motor_id,
+           motor->actual_average_torque / 10);
   }
-  printf("torque configure done!\n");
+  printf("motor%d torque configure done!\n", motor->motor_id);
   return kCfgSuccess;
 }
 
@@ -494,6 +497,10 @@ void maxon::CanDisPatch(void) {
     case kDownClaw1:
       downclaw1_->motor_id = SlaveId;
       MotorParaRead(cob_id, downclaw1_, recv_frame);
+
+    case kDownClaw2:
+      downclaw2_->motor_id = SlaveId;
+      MotorParaRead(cob_id, downclaw2_, recv_frame);
 
     default:
       break;

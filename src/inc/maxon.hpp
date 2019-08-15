@@ -102,7 +102,8 @@ class maxon : public can {
   can can0;
 
   // motors
-  maxon_type *upclaw_, *upwheel_, *downclaw1_, *pulley1_, *pulley2_;
+  maxon_type *upclaw_, *upwheel_, *downclaw1_, *downclaw2_, *pulley1_,
+      *pulley2_;
 
   // delay_time wait for epos 10ms
   static const __u32 kDelayEpos = 10000;

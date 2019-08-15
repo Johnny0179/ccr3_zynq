@@ -80,7 +80,7 @@ class robot : public maxon {
   // pulley homing debug
   static const __u16 kPulleysHomingDebug = 5;
 
-  // up claw hold motion
+  // down claw hold motion
   static const __u16 kDownClawHoldDebug = 6;
 
   // homing motion debug

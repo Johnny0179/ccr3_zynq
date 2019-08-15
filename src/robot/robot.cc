@@ -5,6 +5,7 @@ robot::robot(USHORT reg[]) : maxon() {
   upclaw_ = (maxon_type *)&reg[100];
   upwheel_ = (maxon_type *)&reg[150];
   downclaw1_ = (maxon_type *)&reg[200];
+  downclaw2_ = (maxon_type *)&reg[350];
   pulley1_ = (maxon_type *)&reg[250];
   pulley2_ = (maxon_type *)&reg[300];
 
@@ -14,9 +15,7 @@ robot::robot(USHORT reg[]) : maxon() {
   robot_->mode_select = 1;
 
   // defualt debug mode select
-  robot_->debug_mode_select = 10;
-
-  // defualt RxPDOmapping
+  robot_->debug_mode_select = 6;
 }
 
 robot::~robot() {}
@@ -201,18 +200,27 @@ void robot::Homing(void) {
 
 // down claw debug
 void robot::DownClawHoldDebug(void) {
-  DownClawHold();
+  // DownClawHold();
+  // // MotorEnable(downclaw2_);
+  // // SetTargetTorque(downclaw2_, kDownClawHoldTorque);
+  // // wait for loose cmd
+  // while (robot_->down_claw_debug_loose == 0) {
+  //   delay_us(1000);
+  //   // SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
+  // }
 
-  // wait for loose cmd
-  while (robot_->down_claw_debug_loose == 0) {
-    delay_us(1000);
-    SetTargetTorque(kDownClaw1, kDownClawHoldTorque);
+  // DownClawLoose();
+
+  MotorEnable(downclaw2_);
+  SetTargetTorque(downclaw2_, kDownClawHoldTorque);
+
+  // wait hold complete
+  while (downclaw2_->actual_average_vel != 0) {
+    delay_us(10);
   }
 
-  DownClawLoose();
-
-  // change motor motion state to loose;
-  downclaw1_->motion_state = kLoose;
+  MotorEnable(downclaw2_);
+  SetMotorAbsPos(downclaw2_, downclaw2_->PosPV + kDownClawLooseDistance);
 
   // clear debug parameters
   robot_->down_claw_debug_loose = 0;
@@ -236,32 +244,60 @@ void robot::UpClawHoldDebug(void) {
 void robot::UpClawHold() {
   MotorEnable(upclaw_);
   SetTargetTorque(upclaw_, kUpClawHoldTorque);
+
+  // wait hold complete
+  while (upclaw_->actual_average_vel != 0) {
+    delay_us(10);
+  }
+
+  // change upclaw1 state to hold
+  upclaw_->motion_state = kHold;
 }
 
 // up claw hold
 void robot::UpClawLoose() {
   MotorEnable(upclaw_);
   SetMotorAbsPos(upclaw_, upclaw_->PosPV + kUpClawLooseDistance);
+
+  // change upclaw1 state to loose
+  upclaw_->motion_state = kLoose;
 }
 
 // down claw hold
 void robot::DownClawHold() {
   // enable motor
   MotorEnable(downclaw1_);
+  // MotorEnable(downclaw2_);
 
-  SetTargetTorque(downclaw1_, kDownClawHoldTorque);
+  // MotorEnable(kDownClaw1);
+  // MotorEnable(kDownClaw2);
+  // printf("downclaw2 id %d\n", downclaw2_->motor_id);
+  // SetTargetTorque(downclaw1_, kDownClawHoldTorque);
+  // SetTargetTorque(downclaw2_, kDownClawHoldTorque);
+
+  // wait hold complete
+  while (downclaw1_->actual_average_vel != 0 /* ||
+         downclaw2_->actual_average_vel != 0 */) {
+    delay_us(10);
+  }
 
   // change downclaw1 state to hold
   downclaw1_->motion_state = kHold;
+  // downclaw2_->motion_state = kHold;
 }
 
 // down claw loose
 void robot::DownClawLoose() {
-  MotorEnable(upclaw_);
-  SetMotorAbsPos(downclaw1_, downclaw1_->PosPV + kDownClawLooseDistance);
+  MotorEnable(downclaw1_);
+  MotorEnable(downclaw2_);
 
+  // SetMotorAbsPos(downclaw1_, downclaw1_->PosPV + kDownClawLooseDistance);
+  SetMotorAbsPos(downclaw1_, downclaw2_,
+                 downclaw1_->PosPV + kDownClawLooseDistance,
+                 downclaw2_->PosPV + kDownClawLooseDistance);
   // change downclaw1 state to
   downclaw1_->motion_state = kLoose;
+  downclaw2_->motion_state = kLoose;
 }
 
 // Pulleys tighten
@@ -287,7 +323,11 @@ void robot::MasterMoveUp() {
   DownClawHold();
 
   PulleysTorque(kPulleysTightenTorque);
-
+  // wait pulleys tighten complete
+  while (pulley1_->actual_average_vel != 0 ||
+         pulley2_->actual_average_vel != 0) {
+    delay_us(10);
+  }
   // wait pulleys tighten
   sleep(1);
 
@@ -315,7 +355,11 @@ void robot::MasterMoveDown() {
 
   // tighten pulleys
   PulleysTorque(kPulleysTightenTorque);
-
+  // wait pulleys tighten complete
+  while (pulley1_->actual_average_vel != 0 ||
+         pulley2_->actual_average_vel != 0) {
+    delay_us(10);
+  }
   // wait pulleys tighten
   sleep(1);
 
@@ -431,7 +475,11 @@ void robot::SlaveMoveDown() {
   sleep(2);
 
   PulleysTorque(kPulleysTightenTorque);
-
+  // wait pulleys tighten complete
+  while (pulley1_->actual_average_vel != 0 ||
+         pulley2_->actual_average_vel != 0) {
+    delay_us(10);
+  }
   // wait pulleys tighten
   sleep(2);
 
@@ -470,6 +518,11 @@ void robot::SlaveMoveUp() {
 
   // tighten pulleys
   PulleysTorque(kPulleysTightenTorque);
+  // wait pulleys tighten complete
+  while (pulley1_->actual_average_vel != 0 ||
+         pulley2_->actual_average_vel != 0) {
+    delay_us(10);
+  }
 
   // wait pulleys tighten
   sleep(2);
@@ -527,7 +580,7 @@ void robot::Pulley1SpeedUp() {
   while (abs(pulley1_->PosPV -
                  (pulley1_->init_pos - kUpwheelMoveUpDistance * kSpeedFactor) >
              1000)) {
-              //  printf("pulley1 !\n");
+    //  printf("pulley1 !\n");
     delay_us(10);
   }
 
