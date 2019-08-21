@@ -23,6 +23,7 @@ struct maxon_type {
   // __s32 PosPV_Last;
 
   /* ------------------put new variables blow this line---------------- */
+
   // mode of operation select
   __u16 motion_state;
 
@@ -34,6 +35,9 @@ struct maxon_type {
 
   // delta pos
   __s32 delta_pos;
+
+  // home pos
+  __s32 home_pos;
 
   // loose torque
   __s16 loose_torque;
@@ -105,8 +109,8 @@ class maxon : public can {
   maxon_type *upclaw_, *upwheel_, *downclaw1_, *downclaw2_, *pulley1_,
       *pulley2_;
 
-  // delay_time wait for epos 10ms
-  static const __u32 kDelayEpos = 10000;
+  // delay_time wait for epos 1ms
+  static const __u32 kDelayEpos = 1000;
   /* variable */
   // Motor number
   static const __u8 kMotorNum = 6;
@@ -154,8 +158,8 @@ class maxon : public can {
   // loose distance
   static const __s32 kDownClawLooseDistance = -200000;
 
-  // pulleys debug parameters
-  static const __u32 kPulleysHomingTorque = 10;
+  // homing torque
+  static const __u32 kPulleysHomingTorque = 400;
 
   /* -------------------------Config parameters-------------------------- */
   static const __s8 kCfgSuccess = 0;

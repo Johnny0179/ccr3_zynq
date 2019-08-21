@@ -33,15 +33,15 @@ struct robot_type {
   // pulleys distance factor;
   __s16 pulleys_distance_factor;
 
-  // pulleys homing torque
-  __s16 pulleys_homing_torque;
+  // pulleys homing enable
+  __s16 homing_en;
 
   // pulley 1 torque
-  __s16 pulley1_torque;
+  __s16 upwheel_pos;
   __s16 pulley2_torque;
 
   // pulleys homing done
-  __u16 pulleys_homing_done;
+  __u16 homing_done;
 
   // down claw 1 debug;
   __s16 down_claw_debug_loose;
@@ -123,15 +123,17 @@ class robot : public maxon {
 
   /* upwheel motion debug */
   //   upwheel move distance
-  static const __s32 kUpwheelMoveUpDistance = 80000;
-  static const __s32 kUpwheelMoveDownDistance = -80000;
+  static const __s32 kUpwheelMoveUpDistance = 480000;
+  static const __s32 kUpwheelMoveDownDistance = -480000;
 
   //   move speed
-  static const __s16 kMoveUpSpeed = 2000;
-  static const __s16 kMoveDownSpeed = -2000;
+  static const __s16 kMoveUpSpeed = 6000;
+  static const __s16 kMoveDownSpeed = -6000;
 
   // speed factor slave : master
-  const double kSpeedFactor = 0.25;
+  const double kSpeedFactor = 0.4;
+  const double kDownSpeedFactor = 0.4;
+  const double kDisFactor = 0.8;
   // static const __u8 kSpeedFactor = 1;
 
   //   relative speed factor

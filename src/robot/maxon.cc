@@ -338,8 +338,10 @@ __s8 maxon::SetMotorAbsPos(const maxon_type *motor, __s32 abs_pos) {
     delay_us(kDelayEpos);
     TxPdo2(motor->motor_id, kServAbsPosSet, abs_pos, 0x01);
     SetCtrlWrd(motor->motor_id, 0x000F);
+    printf("motor%d configuring!\n",motor->motor_id);
+    printf("current pos:%d,target pos:%d\n",motor->PosPV,abs_pos);
   }
-
+ printf("motor%d configure done!\n",motor->motor_id);
   return kCfgSuccess;
 }
 
