@@ -338,10 +338,10 @@ __s8 maxon::SetMotorAbsPos(const maxon_type *motor, __s32 abs_pos) {
     delay_us(kDelayEpos);
     TxPdo2(motor->motor_id, kServAbsPosSet, abs_pos, 0x01);
     SetCtrlWrd(motor->motor_id, 0x000F);
-    printf("motor%d configuring!\n",motor->motor_id);
-    printf("current pos:%d,target pos:%d\n",motor->PosPV,abs_pos);
+    printf("motor%d configuring!\n", motor->motor_id);
+    printf("current pos:%d,target pos:%d\n", motor->PosPV, abs_pos);
   }
- printf("motor%d configure done!\n",motor->motor_id);
+  printf("motor%d configure done!\n", motor->motor_id);
   return kCfgSuccess;
 }
 
@@ -423,12 +423,12 @@ __s8 maxon::SetMotorSpeed(const maxon_type *motor, __s32 speed) {
   // set
   TxPdo4(motor->motor_id, speed, 0x03);
   delay_us(kDelayEpos);
-  // wait the toruqe reach the speed, 100rps error
+  // wait the toruqe reach the speed, 2000rps error
   while (motor->mode_display != 0x03 ||
-         abs(motor->actual_average_vel - speed) > 100) {
-    printf("motor %d configuring!\n", motor->motor_id);
-    printf("current speed:%d\n", motor->SpdPV);
-    printf("target speed:%d\n", speed);
+         abs(motor->actual_average_vel) < abs(speed * 0.8)) {
+    // printf("motor %d configuring!\n", motor->motor_id);
+    // printf("current speed:%d\n", motor->SpdPV);
+    // printf("target speed:%d\n", speed);
     TxPdo4(motor->motor_id, speed, 0x03);
     SetCtrlWrd(motor->motor_id, 0x000F);
     delay_us(kDelayEpos);

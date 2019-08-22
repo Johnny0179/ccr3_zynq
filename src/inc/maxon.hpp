@@ -39,6 +39,9 @@ struct maxon_type {
   // home pos
   __s32 home_pos;
 
+  // up delta pos
+  __s32 up_delta_pos;
+
   // loose torque
   __s16 loose_torque;
 
@@ -51,8 +54,9 @@ struct maxon_type {
 
 class maxon : public can {
  private:
-  /* ----------------------------motor electrical
-   * parameters--------------------------------- */
+  /* motor electrical
+   * parameters
+   */
   // nominal current 5030mA
   static const __u32 kNominalCurrent = 5030;
   // max speed 16100 rpm
@@ -109,7 +113,7 @@ class maxon : public can {
   maxon_type *upclaw_, *upwheel_, *downclaw1_, *downclaw2_, *pulley1_,
       *pulley2_;
 
-  // delay_time wait for epos 1ms
+  // delay_time wait for epos 1000us
   static const __u32 kDelayEpos = 1000;
   /* variable */
   // Motor number
@@ -142,16 +146,16 @@ class maxon : public can {
   // initial torque, per thousand of “Motor rated torque
   static const __s16 kUpClawInitialTorque = -600;
 
-  // upclaw hold torque, -50%
-  static const __s16 kUpClawHoldTorque = -500;
+  // upclaw hold torque, -40%
+  static const __s16 kUpClawHoldTorque = -400;
 
   // upclaw loose distance
-  static const __s32 kUpClawLooseDistance = 700000;
+  static const __s32 kUpClawLooseDistance = 770000;
 
   /* downclaw debug parameters */
   // initial torque, per thousand of “Motor rated torque
   static const __u16 kDownClawInitialTorque = 600;
-  // hold torque, 40%
+  // down hold torque, 40%
   static const __u16 kDownClawHoldTorque = 400;
 
   static const __useconds_t kDownClawDelayUs = 500000;

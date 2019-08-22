@@ -98,6 +98,18 @@ class robot : public maxon {
   //   slave move up motion debug
   static const __u16 kSlaveMoveUp = 11;
 
+  // upclaw hold
+  static const __u16 kUpClawHold = 12;
+
+  // upclaw loose
+  static const __u16 kUpClawLoose = 13;
+
+  // downclaw hold
+  static const __u16 kDownClawHold = 14;
+
+  // downclaw loose
+  static const __u16 kDownClawLoose = 15;
+
   /* debug state machine */
 
   /* -------------------------robot motions------------------------------ */
@@ -124,17 +136,17 @@ class robot : public maxon {
   /* upwheel motion debug */
   //   upwheel move distance
   static const __s32 kUpwheelMoveUpDistance = 480000;
-  static const __s32 kUpwheelMoveDownDistance = -480000;
+  static const __s32 kUpwheelMoveDownDistance = -400000;
 
   //   move speed
-  static const __s16 kMoveUpSpeed = 6000;
-  static const __s16 kMoveDownSpeed = -6000;
+  static const __s16 kMoveUpSpeed = 2000;
+  static const __s16 kMoveDownSpeed = -2000;
 
   // speed factor slave : master
-  const double kSpeedFactor = 0.4;
-  const double kDownSpeedFactor = 0.4;
-  const double kDisFactor = 0.8;
-  // static const __u8 kSpeedFactor = 1;
+  const double kSpeedFactor = 0.6;
+  const double kDownSpeedFactor = 0.6;
+  const double kDisFactor1 = 0.3;
+  const double kDisFactor2 = 0.3;
 
   //   relative speed factor
   //   static const double kRelativeSpeedFactor = 0.4;
