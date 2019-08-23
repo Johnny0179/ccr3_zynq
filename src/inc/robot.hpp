@@ -136,7 +136,9 @@ class robot : public maxon {
   /* upwheel motion debug */
   //   upwheel move distance
   static const __s32 kUpwheelMoveUpDistance = 480000;
-  static const __s32 kUpwheelMoveDownDistance = -400000;
+  static const __s32 kUpwheelMoveDownDistance = -480000;
+  // correct parameter
+  static const __s32 kUpwheelMoveDownDistanceCorrect = 80000;
 
   //   move speed
   static const __s16 kMoveUpSpeed = 2000;
@@ -145,8 +147,8 @@ class robot : public maxon {
   // speed factor slave : master
   const double kSpeedFactor = 0.6;
   const double kDownSpeedFactor = 0.6;
-  const double kDisFactor1 = 0.3;
-  const double kDisFactor2 = 0.3;
+  const double kDisFactor1 = 0.325;
+  const double kDisFactor2 = 0.323;
 
   //   relative speed factor
   //   static const double kRelativeSpeedFactor = 0.4;

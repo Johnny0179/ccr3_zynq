@@ -229,9 +229,8 @@ void robot::Homing(void) {
   MotorEnable(downclaw1_);
 
   // hold claws
-  UpClawHold();
-
   DownClawHold();
+  UpClawHold();
 
   // pulleys tighten
   // PulleysTorque(kPulleysTightenTorque);
@@ -466,10 +465,18 @@ void robot::MasterMoveDown() {
   SetMotorAbsPos(pulley1_, pulley1_->PosPV);
   SetMotorAbsPos(pulley2_, pulley2_->PosPV);
 
+  // save init pos
+  pulley1_->init_pos = pulley1_->PosPV;
+  pulley2_->init_pos = pulley2_->PosPV;
+
   // down claw loose
   DownClawLoose();
 
   PulleysMoveDown();
+
+  // down delta pos
+  pulley1_->down_delta_pos = abs(pulley1_->PosPV - pulley1_->init_pos);
+  pulley2_->down_delta_pos = abs(pulley2_->PosPV - pulley2_->init_pos);
 
   // down claw hold
   DownClawHold();
@@ -483,14 +490,23 @@ void robot::PulleysMoveDown() {
   // SetMotorAbsPos(pulley1_, pulley2_, pulley1_->PosPV +
   // kPulleysMoveDownDistance,
   //                pulley2_->PosPV + kPulleysMoveDownDistance);
-  SetMotorAbsPos(pulley1_, pulley2_, pulley1_->PosPV - pulley1_->up_delta_pos,
-                 pulley2_->PosPV - pulley2_->up_delta_pos);
+
+  if (pulley1_->down_delta_pos == 0 || pulley2_->down_delta_pos == 0) {
+    // be careful sign!!!!
+    SetMotorAbsPos(pulley1_, pulley2_,
+                   pulley1_->PosPV + kUpwheelMoveDownDistance * kDisFactor1,
+                   pulley2_->PosPV + kUpwheelMoveDownDistance * kDisFactor2);
+  } else {
+    SetMotorAbsPos(pulley1_, pulley2_,
+                   pulley1_->PosPV - pulley1_->down_delta_pos,
+                   pulley2_->PosPV - pulley2_->down_delta_pos);
+  }
 }
 
 // upwheel speed down thread
 void robot::UpWheelSpeedDown() {
   // wait untill distance reached
-  while (upwheel_->PosPV > (upwheel_->init_pos + kUpwheelMoveDownDistance)) {
+  while (upwheel_->PosPV > (upwheel_->init_pos + kUpwheelMoveDownDistance+kUpwheelMoveDownDistanceCorrect)) {
     delay_us(10);
   }
 
@@ -506,7 +522,7 @@ void robot::UpWheelSpeedDown() {
 // pulley1 speed down thread, direction!
 void robot::Pulley1SpeedDown() {
   // wait untill reach the home pos
-  while (pulley1_->PosPV < pulley1_->home_pos-10000) {
+  while (pulley1_->PosPV < pulley1_->home_pos - 10000) {
     delay_us(10);
   }
 
@@ -517,7 +533,7 @@ void robot::Pulley1SpeedDown() {
 
 // pulley2 speed down thread, direction!
 void robot::Pulley2SpeedDown() {
-  while (pulley2_->PosPV < pulley2_->home_pos-10000) {
+  while (pulley2_->PosPV < pulley2_->home_pos - 10000) {
     delay_us(10);
   }
 

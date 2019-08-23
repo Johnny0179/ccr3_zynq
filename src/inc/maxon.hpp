@@ -42,6 +42,9 @@ struct maxon_type {
   // up delta pos
   __s32 up_delta_pos;
 
+  // down delta pos
+  __s32 down_delta_pos;
+
   // loose torque
   __s16 loose_torque;
 
