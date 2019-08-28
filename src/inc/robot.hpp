@@ -21,17 +21,17 @@ struct robot_type {
   // debug enable?
   __u16 debug_en;
 
-  // claw debug factor
-  __s16 upclaw_debug_factor;
+  // normal_mode enable
+  __u16 normal_mode_en;
 
-  // up claw loose
-  __s16 up_claw_debug_loose;
+  // direction
+  __u16 dir;
 
-  // upwheel debug factor
-  __s16 upwheel_debug_factor;
+  // auto cycle en
+  __s16 auto_cycle_en;
 
-  // pulleys distance factor;
-  __s16 pulleys_distance_factor;
+  // cycle;
+  __s16 cycle;
 
   // pulleys homing enable
   __s16 homing_en;
@@ -109,6 +109,12 @@ class robot : public maxon {
 
   // downclaw loose
   static const __u16 kDownClawLoose = 15;
+
+  // move up
+  static const __u16 kMoveUp = 16;
+
+  // move down
+  static const __u16 kMoveDown = 17;
 
   /* debug state machine */
 

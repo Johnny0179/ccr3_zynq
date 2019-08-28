@@ -499,11 +499,13 @@ void maxon::CanDisPatch(void) {
     case kDownClaw1:
       downclaw1_->motor_id = SlaveId;
       MotorParaRead(cob_id, downclaw1_, recv_frame);
+      break;
 
     case kDownClaw2:
       downclaw2_->motor_id = SlaveId;
       MotorParaRead(cob_id, downclaw2_, recv_frame);
-
+      break;
+      
     default:
       break;
   }
