@@ -126,8 +126,8 @@ class robot : public maxon {
   static const __u8 kHomingDone = 2;
 
   // robot parameters
-  // tighten torque 10%
-  static const __s16 kPulleysTightenTorque = 100;
+  // tighten torque 9%
+  static const __s16 kPulleysTightenTorque = 90;
 
   // pull torque 50%
   static const __s16 kPulleysPullTorque = 500;
@@ -141,20 +141,20 @@ class robot : public maxon {
 
   /* upwheel motion debug */
   //   upwheel move distance
-  static const __s32 kUpwheelMoveUpDistance = 480000;
-  static const __s32 kUpwheelMoveDownDistance = -480000;
+  static const __s32 kUpwheelMoveUpDistance = 200000;
+  static const __s32 kUpwheelMoveDownDistance = -200000;
   // correct parameter
-  static const __s32 kUpwheelMoveDownDistanceCorrect = 80000;
+  static const __s32 kUpwheelMoveDownDistanceCorrect = 40000;
 
   //   move speed
   static const __s16 kMoveUpSpeed = 2000;
   static const __s16 kMoveDownSpeed = -2000;
 
   // speed factor slave : master
-  const double kSpeedFactor = 0.6;
-  const double kDownSpeedFactor = 0.6;
-  const double kDisFactor1 = 0.325;
-  const double kDisFactor2 = 0.323;
+  const double kSpeedFactor = 1.4;
+  const double kDownSpeedFactor = 1;
+  const double kDisFactor1 = 0.6;
+  const double kDisFactor2 = 0.6;
 
   //   relative speed factor
   //   static const double kRelativeSpeedFactor = 0.4;

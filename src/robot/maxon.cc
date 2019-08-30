@@ -423,9 +423,9 @@ __s8 maxon::SetMotorSpeed(const maxon_type *motor, __s32 speed) {
   // set
   TxPdo4(motor->motor_id, speed, 0x03);
   delay_us(kDelayEpos);
-  // wait the toruqe reach the speed, 2000rps error
+  // wait the speed reach 20% of the target speed
   while (motor->mode_display != 0x03 ||
-         abs(motor->actual_average_vel) < abs(speed * 0.8)) {
+         abs(motor->actual_average_vel) < abs(speed * 0.2)) {
     // printf("motor %d configuring!\n", motor->motor_id);
     // printf("current speed:%d\n", motor->SpdPV);
     // printf("target speed:%d\n", speed);
