@@ -116,6 +116,9 @@ class robot : public maxon {
   // move down
   static const __u16 kMoveDown = 17;
 
+  // motion cycle, init up
+  static const __u16 kMotionCycleInitUp = 18;
+
   /* debug state machine */
 
   /* -------------------------robot motions------------------------------ */
@@ -141,24 +144,34 @@ class robot : public maxon {
 
   /* upwheel motion debug */
   //   upwheel move distance
-  static const __s32 kUpwheelMoveUpDistance = 200000;
-  static const __s32 kUpwheelMoveDownDistance = -200000;
-  // correct parameter
-  static const __s32 kUpwheelMoveDownDistanceCorrect = 40000;
+  static const __s32 kUpwheelMoveUpDistance = 450000;
+  static const __s32 kUpwheelMoveDownDistance = -440000;
+
+  // correct parameter, down direction - correct
+  static const __s32 kUpwheelMoveDownDistanceCorrect = 70000;
+
+  // correct parameter of pulleys' distance when slave moves down.
+  static const __s32 kPulleysMoveDownDistanceCorrect = 70000;
 
   //   move speed
-  static const __s16 kMoveUpSpeed = 2000;
-  static const __s16 kMoveDownSpeed = -2000;
+  static const __s16 kMoveUpSpeed = 5000;
+  static const __s16 kMoveDownSpeed = -3000;
 
-  // speed factor slave : master
-  const double kSpeedFactor = 1.4;
-  const double kDownSpeedFactor = 1;
-  const double kDisFactor1 = 0.6;
-  const double kDisFactor2 = 0.6;
+  // slave motion speed factor, pulley : upwheel
+  const double kSpeedFactor = 2;
+  const double kDownSpeedFactor = 1.3;
 
-  //   relative speed factor
-  //   static const double kRelativeSpeedFactor = 0.4;
+  // slave motion distance factor, pulley : upwheel
+  const double kDisFactor1 = 0.38;
+  const double kDisFactor2 = 0.42;
 
+  // master motion distance factor, pulley : upwheel
+  const double kMasterMoveDownDisFactor1=0.5825;
+  const double kMasterMoveDownDisFactor2=0.5643;
+
+  //   robot move distance
+  static const __s32 kRobotMoveUpDistance = 100000;
+  static const __s32 kRobotMoveDownDistance = -100000;
   /* -------------------------debug
    * parameters------------------------------------ */
   // claw relative pos 100 inc

@@ -45,6 +45,9 @@ struct maxon_type {
   // down delta pos
   __s32 down_delta_pos;
 
+  // master move down init pos
+  __s32 master_move_down_init_pos;
+
   // loose torque
   __s16 loose_torque;
 
@@ -153,7 +156,7 @@ class maxon : public can {
   static const __s16 kUpClawHoldTorque = 400;
 
   // upclaw loose distance
-  static const __s32 kUpClawLooseDistance = -900000;
+  static const __s32 kUpClawLooseDistance = -326460;
 
   /* downclaw debug parameters */
   // initial torque, per thousand of “Motor rated torque
