@@ -8,6 +8,36 @@
 
 using namespace std;
 
+// motion parameter structure
+struct motion_para {
+  //   upwheel move distance
+  __s32 upwheel_up_dis;
+  __s32 upwheel_down_dis;
+
+  //   move speed
+  __s16 kMoveUpSpeed;
+  __s16 kMoveDownSpeed;
+
+  // correct parameter, down direction - correct
+  __s32 upwheel_move_down_dis_correct;
+
+  // correct parameter of pulleys' distance when slave moves down.
+  __s32 pulleys_move_down_dis_correct;
+
+  // slave motion speed factor, pulley : upwheel
+  double up_speed_factor;
+  double down_speed_factor;
+
+  // slave motion distance factor, pulley : upwheel
+  double pulley1_dis_factor;
+  double pulley2_dis_factor;
+
+  // master motion distance factor, pulley : upwheel
+  double pulley1_master_down_dis_factor;
+  double pulley2_master_down_dis_factor;
+};
+
+// robot structure
 struct robot_type {
   // system state
   __u16 system_state;
@@ -50,6 +80,9 @@ struct robot_type {
 
   /* ------------------move up motion debug-------------------------- */
   __u16 down_claw_loose_en;
+
+  // motion parameter
+  motion_para motion_parameter;
 };
 
 class robot : public maxon {
@@ -119,6 +152,9 @@ class robot : public maxon {
   // motion cycle, init up
   static const __u16 kMotionCycleInitUp = 18;
 
+  // quit debug
+  static const __u16 kQuitDebug = 19;
+
   /* debug state machine */
 
   /* -------------------------robot motions------------------------------ */
@@ -145,33 +181,33 @@ class robot : public maxon {
   /* upwheel motion debug */
   //   upwheel move distance
   static const __s32 kUpwheelMoveUpDistance = 450000;
-  static const __s32 kUpwheelMoveDownDistance = -440000;
-
-  // correct parameter, down direction - correct
-  static const __s32 kUpwheelMoveDownDistanceCorrect = 70000;
-
-  // correct parameter of pulleys' distance when slave moves down.
-  static const __s32 kPulleysMoveDownDistanceCorrect = 70000;
+  static const __s32 kUpwheelMoveDownDistance = -450000;
 
   //   move speed
   static const __s16 kMoveUpSpeed = 5000;
   static const __s16 kMoveDownSpeed = -3000;
 
+  // correct parameter, down direction - correct
+  static const __s32 kUpwheelMoveDownDistanceCorrect = 110000;
+
+  // correct parameter of pulleys' distance when slave moves down.
+  static const __s32 kPulleysMoveDownDistanceCorrect = 30000;
+
   // slave motion speed factor, pulley : upwheel
-  const double kSpeedFactor = 2;
-  const double kDownSpeedFactor = 1.3;
+  const double kSpeedFactor = 1.75;
+  const double kDownSpeedFactor = 1.4;
 
   // slave motion distance factor, pulley : upwheel
-  const double kDisFactor1 = 0.38;
-  const double kDisFactor2 = 0.42;
+  const double kDisFactor1 = 0.335;
+  const double kDisFactor2 = 0.365;
 
   // master motion distance factor, pulley : upwheel
-  const double kMasterMoveDownDisFactor1=0.5825;
-  const double kMasterMoveDownDisFactor2=0.5643;
+  const double kMasterMoveDownDisFactor1 = 0.5825;
+  const double kMasterMoveDownDisFactor2 = 0.5643;
 
-  //   robot move distance
-  static const __s32 kRobotMoveUpDistance = 100000;
-  static const __s32 kRobotMoveDownDistance = -100000;
+  /*   //   robot move distance
+    static const __s32 kRobotMoveUpDistance = 100000;
+    static const __s32 kRobotMoveDownDistance = -100000; */
   /* -------------------------debug
    * parameters------------------------------------ */
   // claw relative pos 100 inc

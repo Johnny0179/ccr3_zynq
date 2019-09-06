@@ -11,6 +11,8 @@ robot::robot(USHORT reg[]) : maxon() {
 
   robot_ = (robot_type *)&reg[0];
 
+  // default motion parameter
+
   // defualt debug mode
   robot_->mode_select = 1;
 
@@ -147,7 +149,7 @@ void robot::system(void) {
             break;
 
           case kMoveUp:
-            printf("robot move up!");
+            printf("robot move up!\n");
             SlaveMoveUp();
             MasterMoveUp();
             // disable the debug
@@ -155,7 +157,7 @@ void robot::system(void) {
             break;
 
           case kMoveDown:
-            printf("robot move down!");
+            printf("robot move down!\n");
             MasterMoveDown();
             SlaveMoveDown();
             // disable the debug
@@ -163,11 +165,20 @@ void robot::system(void) {
             break;
 
           case kMotionCycleInitUp:
-            printf("cycle motion init up!");
+            printf("cycle motion init up!\n");
             SlaveMoveUp();
             MasterMoveUp();
             MasterMoveDown();
             SlaveMoveDown();
+            // disable the debug
+            robot_->debug_en = 0;
+            break;
+
+          case kQuitDebug:
+            printf("quit debug!\n");
+
+            // stop the canopen network!
+            NMTstop(0);
             // disable the debug
             robot_->debug_en = 0;
             break;
@@ -305,6 +316,7 @@ void robot::Homing(void) {
   MotorDisable(pulley1_);
   MotorDisable(pulley2_);
   MotorDisable(downclaw1_);
+  MotorDisable(downclaw2_);
   MotorDisable(upclaw_);
   MotorDisable(upwheel_);
 
