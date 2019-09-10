@@ -155,6 +155,9 @@ class robot : public maxon {
   // quit debug
   static const __u16 kQuitDebug = 19;
 
+  // master move up debug
+  static const __u16 kMasterMoveUpDebug = 20;
+
   /* debug state machine */
 
   /* -------------------------robot motions------------------------------ */
@@ -188,22 +191,49 @@ class robot : public maxon {
   static const __s16 kMoveDownSpeed = -3000;
 
   // correct parameter, down direction - correct
-  static const __s32 kUpwheelMoveDownDistanceCorrect = 110000;
+  static const __s32 kUpwheelMoveDownDistanceCorrect = 80000;
 
   // correct parameter of pulleys' distance when slave moves down.
-  static const __s32 kPulleysMoveDownDistanceCorrect = 30000;
+  static const __s32 kPulleysMoveDownDistanceCorrect = 35000;
 
   // slave motion speed factor, pulley : upwheel
-  const double kSpeedFactor = 1.75;
-  const double kDownSpeedFactor = 1.4;
+  const double kSpeedFactor = 1.2;
+  const double kDownSpeedFactor = 1.2;
 
   // slave motion distance factor, pulley : upwheel
-  const double kDisFactor1 = 0.335;
-  const double kDisFactor2 = 0.365;
+  const double kDisFactor1 = 0.516;
+  const double kDisFactor2 = 0.516;
 
   // master motion distance factor, pulley : upwheel
-  const double kMasterMoveDownDisFactor1 = 0.5825;
-  const double kMasterMoveDownDisFactor2 = 0.5643;
+  const double kMasterMoveDownDisFactor1 = 0.5276;
+  const double kMasterMoveDownDisFactor2 = 0.5209;
+
+  // 
+  static const __s32 kDisForPPM=40000;
+
+  // upwheel move 450000 parameters
+  const motion_para para_upwheel_45w = {
+      // upwheel move up distance
+      450000,
+      // upwheel move down distance
+      -450000,
+      // move up speed
+      5000,
+      // move down speed
+      -3000,
+      // correct parameter, down direction - correct
+      110000,
+      // correct parameter of pulleys' distance when slave moves down.
+      30000,
+      // slave motion speed factor, pulley : upwheel
+      // pulley1
+      1.75,
+      // pulley2
+      1.35,
+      // slave motion distance factor, pulley : upwheel
+      0.335, 0.365,
+      // master motion distance factor, pulley : upwheel
+      0.5825, 0.5643};
 
   /*   //   robot move distance
     static const __s32 kRobotMoveUpDistance = 100000;
@@ -232,10 +262,12 @@ class robot : public maxon {
 
   // master move up
   void MasterMoveUp();
+  void MasterMoveUpDebug();
   void DownClawHold();
   void DownClawLoose();
   void PulleysTorque(__s16 torque);
   void PulleysMoveUp();
+  void PulleysMoveUpDebug();
 
   // master move down
   void MasterMoveDown();
@@ -254,6 +286,10 @@ class robot : public maxon {
   void UpWheelSpeedUp();
   void Pulley1SpeedUp();
   void Pulley2SpeedUp();
+
+  // robot move up
+  void MoveUp();
+  void MoveDown();
 
   /* -------------------------debug function------------------------------ */
   void UpClawDebug(void);

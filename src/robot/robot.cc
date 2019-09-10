@@ -106,7 +106,6 @@ void robot::system(void) {
           case kSlaveMoveDown:
             printf("Slave Move Down debug!\n");
             SlaveMoveDown();
-
             break;
 
           case kSlaveMoveUp:
@@ -150,14 +149,15 @@ void robot::system(void) {
 
           case kMoveUp:
             printf("robot move up!\n");
-            SlaveMoveUp();
-            MasterMoveUp();
+            MoveUp();
             // disable the debug
             robot_->debug_en = 0;
             break;
 
           case kMoveDown:
             printf("robot move down!\n");
+            MoveDown();
+
             MasterMoveDown();
             SlaveMoveDown();
             // disable the debug
@@ -166,21 +166,23 @@ void robot::system(void) {
 
           case kMotionCycleInitUp:
             printf("cycle motion init up!\n");
-            SlaveMoveUp();
-            MasterMoveUp();
-            MasterMoveDown();
-            SlaveMoveDown();
+            MoveUp();
+            MoveDown();
             // disable the debug
             robot_->debug_en = 0;
             break;
 
           case kQuitDebug:
             printf("quit debug!\n");
-
             // stop the canopen network!
             NMTstop(0);
             // disable the debug
             robot_->debug_en = 0;
+            break;
+
+          case kMasterMoveUpDebug:
+            printf("master move up debug!\n");
+            MasterMoveUpDebug();
             break;
 
           default:
@@ -419,12 +421,13 @@ void robot::PulleysTorque(__s16 torque) {
 
 // Pulleys move up
 void robot::PulleysMoveUp() {
-  // SetMotorAbsPos(pulley1_, pulley2_, pulley1_->PosPV +
-  // kPulleysMoveUpDistance,
-  //                pulley2_->PosPV + kPulleysMoveUpDistance);
-
   // move to home position
   SetMotorAbsPos(pulley1_, pulley2_, pulley1_->home_pos, pulley2_->home_pos);
+}
+
+void robot::PulleysMoveUpDebug() {
+  SetMotorAbsPos(pulley1_, pulley2_, pulley1_->PosPV + kPulleysMoveUpDistance,
+                 pulley2_->PosPV + kPulleysMoveUpDistance);
 }
 
 // master move up
@@ -436,7 +439,7 @@ void robot::MasterMoveUp() {
   MotorEnable(pulley2_);
 
   // down claw hold
-  DownClawHold();
+  // DownClawHold();
 
   PulleysTorque(kPulleysTightenTorque);
 
@@ -453,6 +456,49 @@ void robot::MasterMoveUp() {
 
   // pulleys move up;
   PulleysMoveUp();
+
+  // pulleys up delta pos
+  pulley1_->up_delta_pos = abs(pulley1_->PosPV - pulley1_->init_pos);
+  pulley2_->up_delta_pos = abs(pulley2_->PosPV - pulley2_->init_pos);
+
+  // down claw hold
+  DownClawHold();
+
+  // disable motors
+  MotorDisable(pulley1_);
+  MotorDisable(pulley2_);
+  MotorDisable(downclaw1_);
+  MotorDisable(downclaw2_);
+
+  robot_->debug_en = 0;
+}
+
+// master move up
+void robot::MasterMoveUpDebug() {
+  // enable motors
+  MotorEnable(downclaw1_);
+  MotorEnable(downclaw2_);
+  MotorEnable(pulley1_);
+  MotorEnable(pulley2_);
+
+  // down claw hold
+  // DownClawHold();
+
+  PulleysTorque(kPulleysTightenTorque);
+
+  // lock the pos
+  SetMotorAbsPos(pulley1_, pulley1_->PosPV);
+  SetMotorAbsPos(pulley2_, pulley2_->PosPV);
+
+  // save init pos
+  pulley1_->init_pos = pulley1_->PosPV;
+  pulley2_->init_pos = pulley2_->PosPV;
+
+  // down claw loose
+  DownClawLoose();
+
+  // pulleys move up;
+  PulleysMoveUpDebug();
 
   // pulleys up delta pos
   pulley1_->up_delta_pos = abs(pulley1_->PosPV - pulley1_->init_pos);
@@ -533,10 +579,13 @@ void robot::PulleysMoveDown() {
 void robot::UpWheelSpeedDown() {
   // wait untill distance reached
   while (upwheel_->PosPV > (upwheel_->init_pos + kUpwheelMoveDownDistance +
-                            kUpwheelMoveDownDistanceCorrect)) {
+                            kUpwheelMoveDownDistanceCorrect + kDisForPPM)) {
     delay_us(10);
   }
 
+  // stop
+  SetMotorAbsPos(upwheel_, upwheel_->init_pos + kUpwheelMoveDownDistance +
+                               kUpwheelMoveDownDistanceCorrect);
   MotorDisable(upwheel_);
 
   //   delta pos
@@ -551,23 +600,26 @@ void robot::UpWheelSpeedDown() {
 // pulley1 speed down thread, direction!
 void robot::Pulley1SpeedDown() {
   // wait untill reach the home pos,
-  while (pulley1_->PosPV <
-         pulley1_->home_pos - kPulleysMoveDownDistanceCorrect) {
+  while (pulley1_->PosPV < pulley1_->home_pos - kPulleysMoveDownDistanceCorrect - kDisForPPM) {
     delay_us(10);
   }
 
+  // stop
+  SetMotorAbsPos(pulley1_, pulley1_->home_pos - kPulleysMoveDownDistanceCorrect);
   MotorDisable(pulley1_);
+
   pulley1_->delta_pos = pulley1_->PosPV - pulley1_->init_pos;
   printf("pulley1 delta pos:%d\n", pulley1_->delta_pos);
 }
 
 // pulley2 speed down thread, direction!
 void robot::Pulley2SpeedDown() {
-  while (pulley2_->PosPV <
-         pulley2_->home_pos - kPulleysMoveDownDistanceCorrect) {
+  while (pulley2_->PosPV < pulley2_->home_pos - kPulleysMoveDownDistanceCorrect - kDisForPPM) {
     delay_us(10);
   }
 
+  // stop
+  SetMotorAbsPos(pulley2_, pulley2_->home_pos - kPulleysMoveDownDistanceCorrect);
   MotorDisable(pulley2_);
   pulley2_->delta_pos = pulley2_->PosPV - pulley2_->init_pos;
   printf("pulley2 delta pos:%d\n", pulley2_->delta_pos);
@@ -667,17 +719,18 @@ void robot::SlaveMoveUp() {
 // upwheel speed up thread
 void robot::UpWheelSpeedUp() {
   // wait untill distance reached
-  while (upwheel_->PosPV < (upwheel_->init_pos + kUpwheelMoveUpDistance)) {
-    printf("init pos:%d \n", upwheel_->init_pos);
+  while (upwheel_->PosPV <
+         (upwheel_->init_pos + kUpwheelMoveUpDistance - kDisForPPM)) {
     printf(
         "upwheel pos not reached, error->%d\n",
         abs(upwheel_->PosPV - (upwheel_->init_pos + kUpwheelMoveUpDistance)));
-    printf("current pos:%d, target pos:%d\n", upclaw_->PosPV,
-           (upwheel_->init_pos + kUpwheelMoveUpDistance));
+
     delay_us(10);
   }
 
   // stop
+  // SetMotorSpeed(upwheel_, 0);
+  SetMotorAbsPos(upwheel_, upwheel_->init_pos + kUpwheelMoveUpDistance);
   MotorDisable(upwheel_);
 
   //   delta pos
@@ -694,12 +747,15 @@ void robot::UpWheelSpeedUp() {
 void robot::Pulley1SpeedUp() {
   // wait untill distance reached,1000 inc error!
   while (pulley1_->PosPV >
-         (pulley1_->init_pos - kUpwheelMoveUpDistance * kDisFactor1)) {
-    //  printf("pulley1 !\n");
+         (pulley1_->init_pos - kUpwheelMoveUpDistance * kDisFactor1 +
+          kDisForPPM)) {
     delay_us(10);
   }
 
   // stop
+  // SetMotorSpeed(pulley1_, 0);
+  SetMotorAbsPos(pulley1_,
+                 pulley1_->init_pos - kUpwheelMoveUpDistance * kDisFactor1);
   MotorDisable(pulley1_);
   // delay_us(kDelayEpos);
   pulley1_->delta_pos = pulley1_->PosPV - pulley1_->init_pos;
@@ -710,11 +766,14 @@ void robot::Pulley1SpeedUp() {
 void robot::Pulley2SpeedUp() {
   // wait untill distance reached,1000 inc error!
   while (pulley2_->PosPV >
-         (pulley2_->init_pos - kUpwheelMoveUpDistance * kDisFactor2)) {
+         (pulley2_->init_pos - kUpwheelMoveUpDistance * kDisFactor2 +
+          kDisForPPM)) {
     delay_us(10);
   }
 
   // stop
+  SetMotorAbsPos(pulley2_,
+                 pulley2_->init_pos - kUpwheelMoveUpDistance * kDisFactor2);
   MotorDisable(pulley2_);
   // delay_us(kDelayEpos);
   pulley2_->delta_pos = pulley2_->PosPV - pulley2_->init_pos;
@@ -741,4 +800,147 @@ void robot::UpWheelMoveUp() {
   upwheel_speedup_thread.join();
   pulley1_speedup_thread.join();
   pulley2_speedup_thread.join();
+}
+
+void robot::MoveUp() {
+  // enable motors
+  MotorEnable(upclaw_);
+  MotorEnable(upwheel_);
+  MotorEnable(pulley1_);
+  MotorEnable(pulley2_);
+
+  //   up claw hold?
+  // UpClawHold();
+
+  // don' t need to tighten pulleys when slave moves?
+  // PulleysTorque(kPulleysTightenTorque);
+
+  // disable pulleys
+  MotorDisable(pulley1_);
+  MotorDisable(pulley2_);
+
+  // up claw loose
+  UpClawLoose();
+
+  // enable pulleys
+  MotorEnable(pulley1_);
+  MotorEnable(pulley2_);
+
+  // move up motion
+  UpWheelMoveUp();
+
+  //  disable up claw
+  MotorDisable(upclaw_);
+
+  // enable motors
+  MotorEnable(downclaw1_);
+  MotorEnable(downclaw2_);
+  MotorEnable(pulley1_);
+  MotorEnable(pulley2_);
+
+  // down claw hold
+  DownClawHold();
+
+  PulleysTorque(kPulleysTightenTorque);
+
+  // lock the pos
+  SetMotorAbsPos(pulley1_, pulley1_->PosPV);
+  SetMotorAbsPos(pulley2_, pulley2_->PosPV);
+
+  // save init pos
+  pulley1_->init_pos = pulley1_->PosPV;
+  pulley2_->init_pos = pulley2_->PosPV;
+
+  // down claw loose
+  DownClawLoose();
+
+  // pulleys move up;
+  PulleysMoveUp();
+
+  // pulleys up delta pos
+  pulley1_->up_delta_pos = abs(pulley1_->PosPV - pulley1_->init_pos);
+  pulley2_->up_delta_pos = abs(pulley2_->PosPV - pulley2_->init_pos);
+
+  // down claw hold
+  DownClawHold();
+
+  // disable motors
+  MotorDisable(pulley1_);
+  MotorDisable(pulley2_);
+  MotorDisable(downclaw1_);
+  MotorDisable(downclaw2_);
+
+  robot_->debug_en = 0;
+}
+
+// robot move down
+void robot::MoveDown() {
+  /* master move down */
+  // enable motors
+  MotorEnable(downclaw1_);
+  MotorEnable(downclaw2_);
+  MotorEnable(pulley1_);
+  MotorEnable(pulley2_);
+
+  // tighten pulleys
+  PulleysTorque(kPulleysTightenTorque);
+
+  // lock the pos
+  SetMotorAbsPos(pulley1_, pulley1_->PosPV);
+  SetMotorAbsPos(pulley2_, pulley2_->PosPV);
+
+  // save init pos
+  pulley1_->init_pos = pulley1_->PosPV;
+  pulley2_->init_pos = pulley2_->PosPV;
+
+  // save master move down init pos
+  pulley1_->master_move_down_init_pos = pulley1_->PosPV;
+  pulley2_->master_move_down_init_pos = pulley2_->PosPV;
+
+  // down claw loose
+  DownClawLoose();
+
+  PulleysMoveDown();
+
+  // down delta pos
+  pulley1_->down_delta_pos = abs(pulley1_->PosPV - pulley1_->init_pos);
+  pulley2_->down_delta_pos = abs(pulley2_->PosPV - pulley2_->init_pos);
+
+  // down claw hold
+  DownClawHold();
+
+  // disable the debug
+  robot_->debug_en = 0;
+
+  /* slave move down */
+  // enable motors
+  MotorEnable(upclaw_);
+  MotorEnable(pulley1_);
+  MotorEnable(pulley2_);
+  MotorEnable(upwheel_);
+
+  // upclaw hold
+  UpClawHold();
+
+  // dont't need to tighten the pulleys when slave move up?
+  PulleysTorque(kPulleysTightenTorque);
+
+  // disable pulleys
+  MotorDisable(pulley1_);
+  MotorDisable(pulley2_);
+
+  // upclaw loose
+  UpClawLoose();
+
+  // enable pulleys
+  MotorEnable(pulley1_);
+  MotorEnable(pulley2_);
+
+  //  move down motion
+  UpWheelMoveDown();
+
+  // disable up claw
+  MotorDisable(upclaw_);
+
+  robot_->debug_en = 0;
 }
