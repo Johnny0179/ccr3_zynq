@@ -578,8 +578,9 @@ void robot::PulleysMoveDown() {
 // upwheel speed down thread
 void robot::UpWheelSpeedDown() {
   // wait untill distance reached
-  while (upwheel_->PosPV > (upwheel_->init_pos + kUpwheelMoveDownDistance +
-                            kUpwheelMoveDownDistanceCorrect + kDisForPPM)) {
+  while (upwheel_->PosPV >
+         (upwheel_->init_pos + kUpwheelMoveDownDistance +
+          kUpwheelMoveDownDistanceCorrect + kSlaveDownDisForPPM)) {
     delay_us(10);
   }
 
@@ -600,12 +601,15 @@ void robot::UpWheelSpeedDown() {
 // pulley1 speed down thread, direction!
 void robot::Pulley1SpeedDown() {
   // wait untill reach the home pos,
-  while (pulley1_->PosPV < pulley1_->home_pos - kPulleysMoveDownDistanceCorrect - kDisForPPM) {
+  while (pulley1_->PosPV < pulley1_->home_pos -
+                               kPulley1MoveDownDistanceCorrect -
+                               kSlaveDownDisForPPM) {
     delay_us(10);
   }
 
   // stop
-  SetMotorAbsPos(pulley1_, pulley1_->home_pos - kPulleysMoveDownDistanceCorrect);
+  SetMotorAbsPos(pulley1_,
+                 pulley1_->home_pos - kPulley1MoveDownDistanceCorrect);
   MotorDisable(pulley1_);
 
   pulley1_->delta_pos = pulley1_->PosPV - pulley1_->init_pos;
@@ -614,12 +618,15 @@ void robot::Pulley1SpeedDown() {
 
 // pulley2 speed down thread, direction!
 void robot::Pulley2SpeedDown() {
-  while (pulley2_->PosPV < pulley2_->home_pos - kPulleysMoveDownDistanceCorrect - kDisForPPM) {
+  while (pulley2_->PosPV < pulley2_->home_pos -
+                               kPulley2MoveDownDistanceCorrect -
+                               kSlaveDownDisForPPM) {
     delay_us(10);
   }
 
   // stop
-  SetMotorAbsPos(pulley2_, pulley2_->home_pos - kPulleysMoveDownDistanceCorrect);
+  SetMotorAbsPos(pulley2_,
+                 pulley2_->home_pos - kPulley2MoveDownDistanceCorrect);
   MotorDisable(pulley2_);
   pulley2_->delta_pos = pulley2_->PosPV - pulley2_->init_pos;
   printf("pulley2 delta pos:%d\n", pulley2_->delta_pos);
@@ -720,7 +727,7 @@ void robot::SlaveMoveUp() {
 void robot::UpWheelSpeedUp() {
   // wait untill distance reached
   while (upwheel_->PosPV <
-         (upwheel_->init_pos + kUpwheelMoveUpDistance - kDisForPPM)) {
+         (upwheel_->init_pos + kUpwheelMoveUpDistance - kSlaveUpDisForPPM)) {
     printf(
         "upwheel pos not reached, error->%d\n",
         abs(upwheel_->PosPV - (upwheel_->init_pos + kUpwheelMoveUpDistance)));
@@ -729,7 +736,6 @@ void robot::UpWheelSpeedUp() {
   }
 
   // stop
-  // SetMotorSpeed(upwheel_, 0);
   SetMotorAbsPos(upwheel_, upwheel_->init_pos + kUpwheelMoveUpDistance);
   MotorDisable(upwheel_);
 
@@ -748,12 +754,11 @@ void robot::Pulley1SpeedUp() {
   // wait untill distance reached,1000 inc error!
   while (pulley1_->PosPV >
          (pulley1_->init_pos - kUpwheelMoveUpDistance * kDisFactor1 +
-          kDisForPPM)) {
+          kSlaveUpDisForPPM)) {
     delay_us(10);
   }
 
   // stop
-  // SetMotorSpeed(pulley1_, 0);
   SetMotorAbsPos(pulley1_,
                  pulley1_->init_pos - kUpwheelMoveUpDistance * kDisFactor1);
   MotorDisable(pulley1_);
@@ -767,7 +772,7 @@ void robot::Pulley2SpeedUp() {
   // wait untill distance reached,1000 inc error!
   while (pulley2_->PosPV >
          (pulley2_->init_pos - kUpwheelMoveUpDistance * kDisFactor2 +
-          kDisForPPM)) {
+          kSlaveUpDisForPPM)) {
     delay_us(10);
   }
 

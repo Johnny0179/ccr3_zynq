@@ -2,6 +2,7 @@
 
 #include <pthread.h>
 #include <iostream>
+#include <mutex>
 #include <thread>
 #include "freemodbus_tcp.h"
 #include "maxon.hpp"
@@ -88,7 +89,7 @@ struct robot_type {
 class robot : public maxon {
  private:
   robot_type *robot_;
-
+  mutex mut;
   /* -------------------------robot modes------------------------------- */
   // idle mode
   static const __u16 kIdleMode = 0;
@@ -168,8 +169,8 @@ class robot : public maxon {
   static const __u8 kHomingDone = 2;
 
   // robot parameters
-  // tighten torque 9%
-  static const __s16 kPulleysTightenTorque = 90;
+  // tighten torque 15%
+  static const __s16 kPulleysTightenTorque = 150;
 
   // pull torque 50%
   static const __s16 kPulleysPullTorque = 500;
@@ -187,29 +188,31 @@ class robot : public maxon {
   static const __s32 kUpwheelMoveDownDistance = -450000;
 
   //   move speed
-  static const __s16 kMoveUpSpeed = 5000;
-  static const __s16 kMoveDownSpeed = -3000;
+  static const __s16 kMoveUpSpeed = 8000;
+  static const __s16 kMoveDownSpeed = -6500;
 
   // correct parameter, down direction - correct
-  static const __s32 kUpwheelMoveDownDistanceCorrect = 80000;
+  static const __s32 kUpwheelMoveDownDistanceCorrect = 65000;
 
   // correct parameter of pulleys' distance when slave moves down.
-  static const __s32 kPulleysMoveDownDistanceCorrect = 35000;
+  static const __s32 kPulley1MoveDownDistanceCorrect = 10000;
+  static const __s32 kPulley2MoveDownDistanceCorrect = 10000;
+
+  // distance for PPM control, before which change to PPM
+  static const __s32 kSlaveUpDisForPPM = 110000;
+  static const __s32 kSlaveDownDisForPPM = 100000;
 
   // slave motion speed factor, pulley : upwheel
   const double kSpeedFactor = 1.2;
-  const double kDownSpeedFactor = 1.2;
+  const double kDownSpeedFactor = 1.45;
 
   // slave motion distance factor, pulley : upwheel
-  const double kDisFactor1 = 0.516;
-  const double kDisFactor2 = 0.516;
+  const double kDisFactor1 = 0.545;
+  const double kDisFactor2 = 0.565;
 
   // master motion distance factor, pulley : upwheel
   const double kMasterMoveDownDisFactor1 = 0.5276;
   const double kMasterMoveDownDisFactor2 = 0.5209;
-
-  // 
-  static const __s32 kDisForPPM=40000;
 
   // upwheel move 450000 parameters
   const motion_para para_upwheel_45w = {

@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "modbus-private.h": "c",
-        "thread": "cpp"
+        "thread": "cpp",
+        "mutex": "cpp"
     }
 }

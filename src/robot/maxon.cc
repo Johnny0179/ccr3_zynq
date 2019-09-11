@@ -331,19 +331,44 @@ ssize_t maxon::SetMotorAbsPos(__u8 slave_id, __s32 abs_pos) {
 }
 
 __s8 maxon::SetMotorAbsPos(const maxon_type *motor, __s32 abs_pos) {
+  __s32 init_cfg_pos;
+  // save the init pos before configuration
+  init_cfg_pos = motor->PosPV;
+
   TxPdo2(motor->motor_id, kServAbsPosSet, abs_pos, 0x01);
   delay_us(kDelayEpos);
-  // wait the abs pos reach the target, 1000inc error
-  while (motor->mode_display != 0x01 || abs(motor->PosPV - abs_pos) > 1000) {
+  // wait EPOS configure start
+  while (motor->mode_display != 0x01 ||
+         abs(motor->PosPV - init_cfg_pos) < 1000) {
     delay_us(kDelayEpos);
     TxPdo2(motor->motor_id, kServAbsPosSet, abs_pos, 0x01);
     SetCtrlWrd(motor->motor_id, 0x000F);
-    printf("motor%d configuring!\n", motor->motor_id);
+  }
+  printf("motor%d start configuring!\n", motor->motor_id);
+  // wait the abs pos reach the target, 500inc error
+  while (abs(motor->PosPV - abs_pos) > 500) {
+    delay_us(kDelayEpos);
+    printf("init configure pos:%d\n",init_cfg_pos);
     printf("current pos:%d,target pos:%d\n", motor->PosPV, abs_pos);
   }
-  printf("motor%d configure done!\n", motor->motor_id);
+  printf("motor%d reach target!\n", motor->motor_id);
   return kCfgSuccess;
 }
+
+// __s8 maxon::SetMotorAbsPos(const maxon_type *motor, __s32 abs_pos) {
+//   TxPdo2(motor->motor_id, kServAbsPosSet, abs_pos, 0x01);
+//   delay_us(kDelayEpos);
+//   // wait the abs pos reach the target, 1000inc error
+//   while (motor->mode_display != 0x01 || abs(motor->PosPV - abs_pos) > 1000) {
+//     delay_us(kDelayEpos);
+//     TxPdo2(motor->motor_id, kServAbsPosSet, abs_pos, 0x01);
+//     SetCtrlWrd(motor->motor_id, 0x000F);
+//     printf("motor%d configuring!\n", motor->motor_id);
+//     printf("current pos:%d,target pos:%d\n", motor->PosPV, abs_pos);
+//   }
+//   printf("motor%d configure done!\n", motor->motor_id);
+//   return kCfgSuccess;
+// }
 
 __s8 maxon::SetMotorAbsPos(const maxon_type *motor1, const maxon_type *motor2,
                            __s32 abs_pos1, __s32 abs_pos2) {
@@ -505,7 +530,7 @@ void maxon::CanDisPatch(void) {
       downclaw2_->motor_id = SlaveId;
       MotorParaRead(cob_id, downclaw2_, recv_frame);
       break;
-      
+
     default:
       break;
   }
