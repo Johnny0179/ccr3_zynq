@@ -172,7 +172,7 @@ class robot : public maxon {
   // master move up debug
   static const __u16 kMasterMoveUpDebug = 20;
 
-    // test
+  // test
   static const __u16 kTest = 21;
 
   /* debug state machine */
@@ -238,7 +238,7 @@ class robot : public maxon {
   const double kMasterMoveDownDisFactor1 = 0.5276;
   const double kMasterMoveDownDisFactor2 = 0.5209;
 
-  // upwheel move 450000 parameters
+  /* upwheel move 450000 parameters */
   const motion_para_type kParaUpwheel_45w = {
       // upwheel move up distance
       -450000,
@@ -289,24 +289,24 @@ class robot : public maxon {
       // pulley2:upwheel
       0.5209};
 
-      // upwheel move 900000 parameters
+  // upwheel move 900000 parameters
   const motion_para_type kParaLongStep = {
       // upwheel move up distance
       -600000,
       // upwheel move down distance
       600000,
       // slave move up speed
-      // 6300,
-      -5000,
+
+      -6300,
 
       // slave move down speed
-      // -5500,
-      1000,
+
+      5000,
 
       // master move up speed
       5000,
       // master move down speed
-      -5000,
+      -2000,
       // correct parameter, down direction - correct
       120000,
       // correct parameter of pulleys' distance when slave moves down.
@@ -317,9 +317,9 @@ class robot : public maxon {
 
       // slave move distance for PPM control, before which change to PPM
       // up
-      -40000,
+      40000,
       // down
-      -40000,
+      40000,
 
       // master move distance for PPM control, before which change to PPM
       // pulley1
@@ -343,8 +343,7 @@ class robot : public maxon {
       // pulley2:upwheel
       0.5209};
 
-  /* -------------------------debug
-   * parameters------------------------------------ */
+  /*debug parameters */
   // claw relative pos 100 inc
   static const __u32 kUpClawDebugRelaPos = 100;
 
