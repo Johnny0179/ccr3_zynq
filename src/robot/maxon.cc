@@ -276,7 +276,8 @@ ssize_t maxon::SdoWrU32(__u8 slave_id, __u16 index, __u8 subindex, __u32 data) {
   return can0.send(&sdo_rx_frame);
 }
 
-/* ---------------------------Motor control-----------------------------------
+/*
+ *Motor control
  */
 
 ssize_t maxon::SetCtrlWrd(__u8 slave_id, __u16 ctrl_wrd) {
