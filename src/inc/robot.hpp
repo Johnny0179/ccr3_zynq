@@ -247,7 +247,7 @@ class robot : public maxon {
       450000,  // upwheel move down distance
 
       -6300,  // slave move up speed
-      5500,  // slave move down speed
+      5000,  // slave move down speed
 
       
       5000,// master move up speed
@@ -261,7 +261,7 @@ class robot : public maxon {
       // pulley1
       80000,
       // pulley2
-      80000,
+      120000,
 
       // slave move distance for PPM control, before which change to PPM
       // up
@@ -330,6 +330,57 @@ class robot : public maxon {
       0.5276,  // pulley1:upwheel
       0.5209   // pulley2:upwheel
   };
+
+  /* upwheel move 450000 parameters */
+  const motion_para_type kParaShortStepLoad = {
+      -450000,  // upwheel move up distance
+      450000,  // upwheel move down distance
+
+      -4100,  // slave move up speed
+      5000,  // slave move down speed
+
+      
+      5000,// master move up speed
+      -2000,// master move down speed
+
+
+      // correct parameter, down direction - correct
+      100000,
+
+      // correct parameter of pulleys' distance when slave moves down.
+      // pulley1
+      80000,
+      // pulley2
+      100000,
+
+      // slave move distance for PPM control, before which change to PPM
+      // up
+      110000,
+      // down
+      100000,
+
+      // master move distance for PPM control, before which change to PPM
+      // pulley1
+      5000,
+      // pulley2
+      5000,
+      // slave motion speed factor, pulley : upwheel
+      // up
+      1.2,
+      // down
+      1.7,
+      // slave motion distance factor, pulley : upwheel
+      // pulley1:upwheel
+      // 0.53,
+      0.55,
+      // pulley2:upwheel
+      // 0.55,
+      0.55,
+      // master motion distance factor, pulley : upwheel
+      // pulley1:upwheel
+      0.5276,
+      // pulley2:upwheel
+      0.5209};
 
   /*debug parameters */
   // claw relative pos 100 inc

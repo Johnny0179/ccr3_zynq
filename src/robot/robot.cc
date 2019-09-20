@@ -12,7 +12,7 @@ robot::robot(USHORT reg[]) : maxon() {
   robot_ = (robot_type *)&reg[0];
 
   // default motion parameter
-  robot_->motion_para = kParaShortStep;
+  robot_->motion_para = kParaShortStepLoad;
   // defualt debug mode
   robot_->mode_select = 1;
 
@@ -164,6 +164,8 @@ void robot::system(void) {
           case kMotionCycleInitUp:
             printf("cycle motion init up!\n");
             MoveUp();
+            MoveUp();
+            MoveDown();
             MoveDown();
             // disable the debug
             robot_->debug_en = 0;
@@ -714,9 +716,18 @@ void robot::PulleysMoveDown() {
                        (robot_->motion_para.upwheel_down_dis) *
                            robot_->motion_para.pulley1_master_down_dis_factor);
   } else {
-    SetMotorAbsPos(pulley1_, pulley2_,
-                   pulley1_->PosPV - pulley1_->down_delta_pos,
-                   pulley2_->PosPV - pulley2_->down_delta_pos);
+    // SetMotorAbsPos(pulley1_, pulley2_,
+    //                pulley1_->PosPV - pulley1_->down_delta_pos,
+    //                pulley2_->PosPV - pulley2_->down_delta_pos);
+  
+      SetMotorAbsPos(pulley1_, pulley2_,
+                   pulley1_->PosPV -
+                       (robot_->motion_para.upwheel_down_dis) *
+                           robot_->motion_para.pulley1_master_down_dis_factor,
+                   pulley2_->PosPV -
+                       (robot_->motion_para.upwheel_down_dis) *
+                           robot_->motion_para.pulley1_master_down_dis_factor);
+  
   }
 }
 
@@ -1079,7 +1090,8 @@ void robot::MoveDown() {
   // down claw loose
   DownClawLoose();
 
-  PulleysMoveDown(robot_->motion_para.master_move_down_speed);
+  // PulleysMoveDown(robot_->motion_para.master_move_down_speed);
+  PulleysMoveDown();
 
   // down delta pos
   pulley1_->down_delta_pos = abs(pulley1_->PosPV - pulley1_->init_pos);
@@ -1097,8 +1109,8 @@ void robot::MoveDown() {
   /* slave move down */
   // enable motors
   MotorEnable(upclaw_);
-  MotorEnable(pulley1_);
-  MotorEnable(pulley2_);
+  // MotorEnable(pulley1_);
+  // MotorEnable(pulley2_);
   MotorEnable(upwheel_);
 
   // upclaw hold?
