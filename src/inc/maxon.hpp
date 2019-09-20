@@ -152,11 +152,11 @@ class maxon : public can {
   // initial torque, per thousand of “Motor rated torque
   // static const __s16 kUpClawInitialTorque = -600;
 
-  // upclaw hold torque, 40%
-  static const __s16 kUpClawHoldTorque = 400;
+  // upclaw hold torque, 30%
+  static const __s16 kUpClawHoldTorque = 300;
 
   // upclaw loose distance
-  static const __s32 kUpClawLooseDistance = -350000;
+  static const __s32 kUpClawLooseDistance = -344108;
 
   /* downclaw debug parameters */
   // initial torque, per thousand of “Motor rated torque
