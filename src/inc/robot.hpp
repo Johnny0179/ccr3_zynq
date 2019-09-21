@@ -80,6 +80,9 @@ struct robot_type {
   // pulleys homing enable
   __s16 homing_en;
 
+  // load_test_up_en
+  __s16 load_test_up_en;
+
   // pulley 1 torque
   __s16 upwheel_pos;
   __s16 pulley2_torque;
@@ -170,7 +173,8 @@ class robot : public maxon {
   static const __u16 kQuitDebug = 19;
 
   // master move up debug
-  static const __u16 kMasterMoveUpDebug = 20;
+  static const __u16 kMasterMoveUpDebug = 25;
+  static const __u16 kMasterMoveDownDebug = 26;
 
   // test
   static const __u16 kTest = 21;
@@ -198,8 +202,8 @@ class robot : public maxon {
   static const __s16 kPulleysLooseTorque = 100;
 
   // pulleys move distance
-  static const __s32 kPulleysMoveUpDistance = 50000;
-  static const __s32 kPulleysMoveDownDistance = -20000;
+  static const __s32 kPulleysMoveUpDistance = 500000;
+  static const __s32 kPulleysMoveDownDistance = -500000;
 
   // /* upwheel motion debug */
   // //   upwheel move distance
@@ -337,7 +341,7 @@ class robot : public maxon {
       450000,  // upwheel move down distance
 
       -4100,  // slave move up speed
-      5000,  // slave move down speed
+      2900,  // slave move down speed
 
       
       5000,// master move up speed
@@ -406,12 +410,14 @@ class robot : public maxon {
   // master move up
   void MasterMoveUp();
   void MasterMoveUpDebug();
+  void MasterMoveDownDebug();
   void DownClawHold();
   void DownClawLoose();
   void PulleysTorque(__s16 torque);
   void PulleysMoveUp();
   void PulleysMoveUp(__s32 speed);
   void PulleysMoveUpDebug();
+  void PulleysMoveDownDebug();
   void Pulley1MasterSpeedUp();
   void Pulley2MasterSpeedUp();
 
